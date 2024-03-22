@@ -1,0 +1,8 @@
+{
+  "cSpell.words": ["postcloud"],
+  "diffEditor.hideUnchangedRegions.enabled": true,
+  "workbench.tree.enableStickyScroll": false,
+  "editor.stickyScroll.scrollWithEditor": false,
+  "editor.stickyScroll.enabled": false,
+  "explorer.compactFolders": false
+}

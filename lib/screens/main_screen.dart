@@ -3,8 +3,6 @@ import 'package:app_pos/screens/receipts_screen.dart';
 import 'package:app_pos/screens/setting_screen.dart';
 import 'package:app_pos/screens/tickets_screen.dart';
 import 'package:app_pos/widgets/navigation_drawer.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:app_pos/constant.dart';
 import 'package:flutter/material.dart';
 
 class MainScreen extends StatefulWidget {
@@ -19,19 +17,18 @@ class _MainScreenState extends State<MainScreen> {
   int currentTab = 0;
 
   void handleScreenChanged(int selectedScreen) {
-    print(selectedScreen);
     setState(() {
       currentTab = selectedScreen;
     });
   }
 
   List screens = [
-    HomeScreen(),
-    ReceiptsScreen(),
-    SettingScreen(),
-    HomeScreen(),
-    HomeScreen(),
-    HomeScreen(),
+    const HomeScreen(),
+    const ReceiptsScreen(),
+    const SettingScreen(),
+    const HomeScreen(),
+    const HomeScreen(),
+    const HomeScreen(),
   ];
   @override
   Widget build(BuildContext context) {
@@ -47,27 +44,30 @@ class _MainScreenState extends State<MainScreen> {
               ],
               onChanged: (item) {},
             ),
-            SizedBox(
+            const SizedBox(
               width: 10,
             ),
             GestureDetector(
-              onTap: (){
-                Navigator.of(context).push(MaterialPageRoute(builder: (context) => TicketScreen()));
+              onTap: () {
+                Navigator.of(context).push(MaterialPageRoute(
+                    builder: (context) => const TicketScreen()));
               },
-              child: Container(
+              child: const SizedBox(
                 // color: Colors.red,
                 height: 37,
                 width: 40,
                 child: Stack(
                   children: [
-                    Positioned(
-                      top: 14,
-                      child: Icon(Icons.point_of_sale_sharp)),
+                    Positioned(top: 14, child: Icon(Icons.point_of_sale_sharp)),
                     Positioned(
                         // top: -10,
-                        right:5,
+                        right: 5,
                         child: Center(
-                          child: Text('3',style: TextStyle(fontSize:16,fontWeight: FontWeight.bold),),
+                          child: Text(
+                            '3',
+                            style: TextStyle(
+                                fontSize: 16, fontWeight: FontWeight.bold),
+                          ),
                         ))
                   ],
                 ),
@@ -76,10 +76,11 @@ class _MainScreenState extends State<MainScreen> {
           ],
         ),
         actions: [
-          IconButton(onPressed: () {}, icon: Icon(Icons.supervisor_account)),
+          IconButton(
+              onPressed: () {}, icon: const Icon(Icons.supervisor_account)),
           PopupMenuButton(
               itemBuilder: (BuildContext context) => [
-                    PopupMenuItem(
+                    const PopupMenuItem(
                         child: ListTile(
                       title: Text('Refesh'),
                       leading: Icon(Icons.refresh),
@@ -89,13 +90,5 @@ class _MainScreenState extends State<MainScreen> {
       ),
       body: screens[currentTab],
     );
-  }
-
-  _launchURL() async {
-    const url = urlBackOffice;
-    Uri uri = Uri.parse(url);
-    if (!await launchUrl(uri)) {
-      throw Exception('Could not launch $uri');
-    }
   }
 }

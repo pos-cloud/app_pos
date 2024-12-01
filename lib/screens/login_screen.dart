@@ -20,17 +20,15 @@ class _LoginScreenState extends State<LoginScreen> {
       body: Center(
         child: Container(
           height: 500,
-          padding: EdgeInsets.all(30),
+          padding: const EdgeInsets.all(30),
           child: Column(
             children: [
-              Container(
-                child: Image.network(
-                  'https://media.licdn.com/dms/image/C4E0BAQFD462Hv9r2vg/company-logo_200_200/0/1630575315482?e=1717027200&v=beta&t=kGp1P603iskkGc_4a4UrDwKfV-jI2AG3Wh8kjIlgaVc',
-                  height: 130,
-                ),
+              Image.asset(
+                'assets/logo.png',
+                height: 130,
               ),
-              SizedBox(height: 20),
-              SizedBox(
+              const SizedBox(height: 20),
+              const SizedBox(
                 height: 45,
                 child: TextField(
                   decoration: InputDecoration(
@@ -39,8 +37,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
-              SizedBox(
+              const SizedBox(height: 20),
+              const SizedBox(
                 height: 45,
                 child: TextField(
                   decoration: InputDecoration(
@@ -49,7 +47,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               SizedBox(
                 height: 45,
                 child: TextField(
@@ -58,26 +56,26 @@ class _LoginScreenState extends State<LoginScreen> {
                     suffixIcon: IconButton(
                         onPressed: () {
                           setState(() {
-                            isVisiblePassword = !this.isVisiblePassword;
+                            isVisiblePassword = !isVisiblePassword;
                           });
                         },
                         icon: isVisiblePassword
-                            ? Icon(Icons.visibility_off)
-                            : Icon(Icons.visibility)),
-                    border: OutlineInputBorder(),
+                            ? const Icon(Icons.visibility_off)
+                            : const Icon(Icons.visibility)),
+                    border: const OutlineInputBorder(),
                     labelText: "Password",
                   ),
                 ),
               ),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor:
-                        MaterialStatePropertyAll<Color>(colorPrincipal),
+                        const MaterialStatePropertyAll<Color>(colorPrincipal),
                     shape: MaterialStateProperty.all(
-                      RoundedRectangleBorder(
+                      const RoundedRectangleBorder(
                         borderRadius: BorderRadius.all(Radius.circular(10)),
                       ),
                     ),
@@ -87,7 +85,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       GoRouter.of(context).go(MainScreen.path);
                     });
                   },
-                  child: Text(
+                  child: const Text(
                     'Iniciar sesión',
                     style: TextStyle(color: Colors.white),
                   ),

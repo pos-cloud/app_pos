@@ -1,7 +1,6 @@
 import 'package:app_pos/constant.dart';
 import 'package:flutter/material.dart';
 
-
 class Article extends StatefulWidget {
   const Article({super.key});
 
@@ -30,14 +29,14 @@ class _ArticleState extends State<Article> {
                 decoration: BoxDecoration(
                     color: contentColor,
                     borderRadius: BorderRadius.circular(10)),
-                padding: EdgeInsets.all(10),
+                padding: const EdgeInsets.all(10),
                 child: Image.network(
                     'https://raw.githubusercontent.com/uranus-code/shop_app/master/assets/shoes.jpg'),
               ),
-              SizedBox(
+              const SizedBox(
                 width: 10,
               ),
-              Column(
+              const Column(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -53,7 +52,7 @@ class _ArticleState extends State<Article> {
             ],
           ),
         ),
-        Positioned(
+        const Positioned(
           top: 50,
           right: 20,
           child: Center(

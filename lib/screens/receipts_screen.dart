@@ -35,19 +35,20 @@ class ReceiptsScreen extends StatelessWidget {
           itemCount: salesData.length * 2,
           itemBuilder: (BuildContext context, index) {
             if (index.isOdd) {
-              return Divider();
+              return const Divider();
             }
 
             int salesIndex = index ~/ 2;
-            print(salesIndex);
             String date = salesData[salesIndex]['date'];
             List<String> products = salesData[salesIndex]['products'];
             return ListTile(
               title: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(date, style: TextStyle(fontWeight: FontWeight.bold)),
-                  for (String product in products) CardOrder(),
+                  Text(date,
+                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  // ignore: unused_local_variable
+                  for (String product in products) const CardOrder(),
                 ],
               ),
             );

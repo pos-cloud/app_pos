@@ -16,7 +16,6 @@ class HomeScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return BlocProvider(
       create: (context) {
-        print("====>");
         return HomeBloc();
       },
       child: Scaffold(

@@ -1,4 +1,3 @@
-import 'package:app_pos/widgets/custom_keyboard.dart';
 import 'package:flutter/material.dart';
 
 class SettingScreen extends StatelessWidget {
@@ -6,11 +5,6 @@ class SettingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      
-    );
+    return const Scaffold();
   }
 }
-
-
-

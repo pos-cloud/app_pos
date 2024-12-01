@@ -16,7 +16,7 @@ class KeyboardScreen extends StatelessWidget {
           context.pop(1);
         },
       )),
-      body: CustomKeyboard(),
+      body: const CustomKeyboard(),
     );
   }
 }

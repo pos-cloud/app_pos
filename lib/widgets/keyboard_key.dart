@@ -6,11 +6,13 @@ class KeyboardKey extends StatefulWidget {
   final ValueSetter<dynamic> onTap;
 
   const KeyboardKey({
+    super.key,
     @required this.label,
     @required this.value,
     required this.onTap,
   });
   @override
+  // ignore: library_private_types_in_public_api
   _KeyboardKeyState createState() => _KeyboardKeyState();
 }
 
@@ -22,7 +24,7 @@ class _KeyboardKeyState extends State<KeyboardKey> {
 
     return Text(
       widget.label,
-      style: TextStyle(
+      style: const TextStyle(
         fontSize: 45.0,
         fontWeight: FontWeight.normal,
       ),
@@ -37,10 +39,8 @@ class _KeyboardKeyState extends State<KeyboardKey> {
       },
       child: AspectRatio(
         aspectRatio: 1.5,
-        child: Container(
-          child: Center(
-            child: renderLabel(),
-          ),
+        child: Center(
+          child: renderLabel(),
         ),
       ),
     );

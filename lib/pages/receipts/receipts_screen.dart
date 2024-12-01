@@ -43,7 +43,6 @@ class ReceiptsScreen extends StatelessWidget {
             }
 
             int salesIndex = index ~/ 2;
-            print(salesIndex);
             String date = salesData[salesIndex]['date'];
             List<String> products = salesData[salesIndex]['products'];
             return ListTile(
@@ -52,7 +51,8 @@ class ReceiptsScreen extends StatelessWidget {
                 children: [
                   Text(date,
                       style: const TextStyle(fontWeight: FontWeight.bold)),
-                  for (String product in products) CardOrder(),
+                  // ignore: unused_local_variable
+                  for (String product in products) const CardOrder(),
                 ],
               ),
             );

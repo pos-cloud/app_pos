@@ -10,7 +10,7 @@ class DisplayItems extends StatelessWidget {
     return GestureDetector(
       onTap: () {
         Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => TicketScreen()));
+            MaterialPageRoute(builder: (context) => const TicketScreen()));
       },
       child: SizedBox(
         height: 37,

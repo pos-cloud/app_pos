@@ -10,14 +10,13 @@ class KeyboardScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
-          onPressed: () {
+          leading: IconButton(
+        icon: const Icon(Icons.arrow_back),
+        onPressed: () {
           context.go('/main_screen');
-          },
-         )
-      ),
-      body: CustomKeyboard(),
+        },
+      )),
+      body: const CustomKeyboard(),
     );
   }
 }

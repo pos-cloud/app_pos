@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:app_pos/widgets/keyboard_key.dart';
 
 class CustomKeyboard extends StatefulWidget {
+  const CustomKeyboard({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _CustomKeyboardState createState() => _CustomKeyboardState();
 }
 
@@ -22,7 +25,6 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
                     label: y,
                     value: y,
                     onTap: (val) {
-                      print(val);
                       if (val is Widget) {
                         onBackSpacePress();
                       } else {
@@ -40,12 +42,12 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
 
   renderAmount() {
     String display = 'Enter a Number';
-    TextStyle style = TextStyle(
+    TextStyle style = const TextStyle(
       fontSize: 30,
       color: Colors.blueGrey,
     );
 
-    if (this.amount.length > 0) {
+    if (amount.isNotEmpty) {
       display = amount;
 
       // NumberFormat f = NumberFormat('#,###');
@@ -71,23 +73,19 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
   renderConfirmButton() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10),
-      margin: EdgeInsets.symmetric(vertical: 10),
+      margin: const EdgeInsets.symmetric(vertical: 10),
       child: Row(
         children: [
           Expanded(
-            child: Container(
+            child: SizedBox(
               height: 40,
               child: ElevatedButton(
                 style: ElevatedButton.styleFrom(
                   backgroundColor:
                       Colors.green, // Define el color de fondo del botón
                 ),
-                onPressed: amount.length > 0
-                    ? () {
-                        print(amount);
-                      }
-                    : null,
-                child: Center(
+                onPressed: amount.isNotEmpty ? () {} : null,
+                child: const Center(
                   child: Text(
                     'Confirm',
                     style: TextStyle(fontSize: 24),
@@ -108,7 +106,7 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
   }
 
   onBackSpacePress() {
-    if (amount.length == 0) {
+    if (amount.isEmpty) {
       return;
     }
 
@@ -125,7 +123,7 @@ class _CustomKeyboardState extends State<CustomKeyboard> {
       ['1', '2', '3'],
       ['4', '5', '6'],
       ['7', '8', '9'],
-      ['00', '0', Icon(Icons.keyboard_backspace, size: 45)],
+      ['00', '0', const Icon(Icons.keyboard_backspace, size: 45)],
     ];
 
     amount = '';

@@ -18,13 +18,13 @@ class NavigationDrawerCustom extends StatelessWidget {
                 'https://media.licdn.com/dms/image/C4E0BAQFD462Hv9r2vg/company-logo_200_200/0/1630575315482?e=1717027200&v=beta&t=kGp1P603iskkGc_4a4UrDwKfV-jI2AG3Wh8kjIlgaVc',
                 height: 100,
               ),
-              Text("PostCloud")
+              const Text("POS Cloud")
             ],
           )),
           ListTile(
-            title: Text('Sales'),
+            title: const Text('Sales'),
             selected: true,
-            leading: Icon(
+            leading: const Icon(
               Icons.shopping_bag,
               size: 30,
             ),
@@ -33,9 +33,9 @@ class NavigationDrawerCustom extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('Receipts'),
+            title: const Text('Receipts'),
             selected: true,
-            leading: Icon(
+            leading: const Icon(
               Icons.description_outlined,
               size: 30,
             ),
@@ -44,9 +44,9 @@ class NavigationDrawerCustom extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('Settings'),
+            title: const Text('Settings'),
             selected: true,
-            leading: Icon(
+            leading: const Icon(
               Icons.settings,
               size: 30,
             ),
@@ -55,23 +55,22 @@ class NavigationDrawerCustom extends StatelessWidget {
             },
           ),
           ListTile(
-            title: Text('Back office'),
+            title: const Text('Back office'),
             selected: true,
-            leading: Icon(Icons.bar_chart),
-            onTap: () async{
-             await _launchURL();
+            leading: const Icon(Icons.bar_chart),
+            onTap: () async {
+              await _launchURL();
             },
           ),
           ListTile(
-              title: Text('Support'),
+              title: const Text('Support'),
               selected: true,
-              leading: Icon(Icons.support_agent_outlined),
+              leading: const Icon(Icons.support_agent_outlined),
               onTap: () {
-              handleScreenChanged(4);
-
+                handleScreenChanged(4);
               }),
-          Spacer(),
-          ListTile(
+          const Spacer(),
+          const ListTile(
             title: Text('Exit'),
             leading: Icon(Icons.exit_to_app_sharp),
           )
@@ -84,7 +83,7 @@ class NavigationDrawerCustom extends StatelessWidget {
     const url = urlBackOffice;
     Uri uri = Uri.parse(url);
     if (!await launchUrl(uri)) {
-    throw Exception('Could not launch $uri');
-  }
+      throw Exception('Could not launch $uri');
+    }
   }
 }

@@ -12,7 +12,7 @@ class TicketScreen extends StatelessWidget {
           Expanded(
             // height: double.infinity - 100,
             child: ListView(
-              children: [
+              children: const [
                 ContainerItem(nombre: 'Producto 1', cantidad: 2, total: 20.0),
                 ContainerItem(nombre: 'Producto 1', cantidad: 2, total: 20.0),
               ],
@@ -20,7 +20,7 @@ class TicketScreen extends StatelessWidget {
           ),
           ElevatedButton(
               onPressed: () {},
-              child: Center(
+              child: const Center(
                 child: Text('Pagar'),
               ))
         ],
@@ -35,6 +35,7 @@ class ContainerItem extends StatelessWidget {
   final double total;
 
   const ContainerItem({
+    super.key,
     required this.nombre,
     required this.cantidad,
     required this.total,
@@ -43,11 +44,11 @@ class ContainerItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: EdgeInsets.all(8),
+      padding: const EdgeInsets.all(8),
       // decoration: BoxDecoration(
       //   border: Border(bottom: BorderSide(color: Colors.grey)),
       // ),
-      child: Row(
+      child: const Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Row(

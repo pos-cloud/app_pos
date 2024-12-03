@@ -1,20 +1,20 @@
-import 'package:app_pos/routes/router.dart';
+import 'package:app_pos/screens/login_screen.dart';
+import 'package:app_pos/screens/main_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(const ProviderScope(child: MyApp()));
 }
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    const Color primaryLogoColor =
-        Color(0xFF4A90E2); // Reemplaza con el color de tu logo
-    return MaterialApp.router(
-      routerConfig: applicationRouter,
+    const Color primaryLogoColor = Color(0xFF4A90E2);
+
+    return MaterialApp(
       title: 'Flutter Demo',
       color: Colors.white,
       debugShowCheckedModeBanner: false,
@@ -22,6 +22,11 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: primaryLogoColor),
         useMaterial3: true,
       ),
+      initialRoute: LoginScreen.path,
+      routes: {
+        LoginScreen.path: (context) => const LoginScreen(),
+        MainScreen.path: (context) => const MainScreen(),
+      },
     );
   }
 }

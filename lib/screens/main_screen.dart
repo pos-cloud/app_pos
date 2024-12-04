@@ -72,7 +72,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             setState(() {
               selectedTransactionType = newValue;
             });
-            ref.read(globalTransactionProvider.notifier).setRandomTotalPrice();
+            // ref.read(globalTransactionProvider.notifier).setRandomTotalPrice();
           },
           items:
               filteredTransactionTypes.map<DropdownMenuItem<TransactionType>>(
@@ -140,7 +140,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             )
           : Center(
               child: Text(
-                "Total: \$${ref.watch(globalTransactionProvider).transaction['totalPrice'].toStringAsFixed(2)}",
+                "Total: \$${ref.watch(globalTransactionProvider).transaction?.totalPrice?.toStringAsFixed(2)}",
                 style:
                     const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
               ),

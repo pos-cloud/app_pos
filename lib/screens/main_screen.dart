@@ -52,6 +52,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         .toList();
   }
 
+  void _clearTicket() {
+    ref.read(globalTransactionProvider.notifier).resetTransaction();
+
+    setState(() {
+      selectedTransactionType = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final transactionTypes = ref.watch(transactionTypeProvider);
@@ -81,15 +89,50 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 .updateTransactionType(newValue);
           },
         ),
+        actions: [
+          // Menú de tres puntos (overflow menu)
+          PopupMenuButton<String>(
+            onSelected: (value) {
+              if (value == 'Actualizar') {
+                // Ejecutamos el método para cargar los artículos
+                ref.read(articlesProvider.notifier).loadArticles();
+              } else {
+                _clearTicket();
+              }
+            },
+            itemBuilder: (BuildContext context) {
+              return [
+                const PopupMenuItem<String>(
+                  value: 'Actualizar',
+                  child: Row(
+                    children: [
+                      Icon(Icons.refresh),
+                      SizedBox(width: 10),
+                      Text('Actualizar'),
+                    ],
+                  ),
+                ),
+                const PopupMenuItem<String>(
+                  value: 'Eliminar',
+                  child: Row(
+                    children: [
+                      Icon(Icons.delete),
+                      SizedBox(width: 10),
+                      Text('Limpiar Ticket'),
+                    ],
+                  ),
+                ),
+              ];
+            },
+          ),
+        ],
       ),
       body: selectedTransactionType == null
           ? const TransactionTypeSelectionWidget()
           : const Column(
-              // El Expanded debe estar dentro de un Column o Row
               children: [
                 SelectPaymentMethodButton(),
                 Expanded(
-                  // Aquí funciona correctamente
                   child: SelectArticleWidget(),
                 ),
               ],

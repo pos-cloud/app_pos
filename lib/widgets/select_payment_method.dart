@@ -25,12 +25,10 @@ class SelectPaymentMethodButton extends ConsumerWidget {
           print("Método de pago seleccionado");
         },
         style: ElevatedButton.styleFrom(
-          backgroundColor: Colors.blue[200],
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(12), // Bordes redondeados
           ),
           elevation: 8, // Sombra para el botón
-          shadowColor: Colors.black.withOpacity(0.5), // Sombra más suave
           padding: const EdgeInsets.symmetric(
               horizontal: 16), // Espaciado dentro del botón
         ),

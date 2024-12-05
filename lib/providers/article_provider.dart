@@ -9,7 +9,9 @@ class ArticleNotifier extends StateNotifier<List<Article>> {
 
   Future<void> loadArticles() async {
     try {
+      print("entro");
       final articles = await _articleService.getArticles();
+      print(articles);
       state = articles;
     } catch (e) {
       state = [];

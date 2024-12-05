@@ -13,6 +13,7 @@ class ArticleService {
     final token =
         await _authService.getToken(); // Obtenemos el token desde AuthService
 
+    print(token);
     final project = jsonEncode({
       'code': 1,
       'description': 1,
@@ -44,12 +45,15 @@ class ArticleService {
       },
     );
 
+    print(response);
+
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse<List<Article>>.fromJson(
         jsonDecode(response.body),
         (json) => (json as List).map((e) => Article.fromJson(e)).toList(),
       );
 
+      print(apiResponse.result);
       if (apiResponse.status == 200) {
         return apiResponse.result;
       } else {

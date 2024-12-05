@@ -1,3 +1,8 @@
+import 'package:app_pos/providers/article_provider.dart';
+import 'package:app_pos/widgets/select_article.dart';
+import 'package:app_pos/widgets/select_payment_method.dart';
+import 'package:app_pos/widgets/transaction_type_selection.dart';
+import 'package:app_pos/widgets/transaction_type_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/widgets/navigation_drawer.dart';
@@ -27,7 +32,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     // Cargar los datos iniciales.
     Future.microtask(() {
       ref.read(transactionTypeProvider.notifier).loadTransactionTypes();
-      ref.read(globalTransactionProvider.notifier).resetTransaction();
+      ref.read(articlesProvider.notifier).loadArticles();
     });
 
     // Abrir el drawer automáticamente tras la construcción inicial.
@@ -53,144 +58,42 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final filteredTransactionTypes = _filterTransactionTypes(transactionTypes);
 
     return Scaffold(
-      key: _scaffoldKey, // Asociar la clave al Scaffold
+      key: _scaffoldKey,
       drawer: NavigationDrawerCustom(
         onItemSelected: (TransactionMovement movement) {
           setState(() {
             selectedMovement = movement;
-            selectedTransactionType =
-                null; // Resetear la selección del dropdown
+            selectedTransactionType = null;
           });
-          Navigator.of(context).pop(); // Cierra el Drawer.
+          Navigator.of(context).pop();
         },
       ),
       appBar: AppBar(
-        title: DropdownButton<TransactionType>(
-          hint: const Text("Seleccione una transacción"),
-          value: selectedTransactionType,
+        title: TransactionTypeSelector(
+          selectedTransactionType: selectedTransactionType,
+          transactionTypes: filteredTransactionTypes,
           onChanged: (TransactionType? newValue) {
             setState(() {
               selectedTransactionType = newValue;
             });
-            // ref.read(globalTransactionProvider.notifier).setRandomTotalPrice();
+            ref
+                .read(globalTransactionProvider.notifier)
+                .updateTransactionType(newValue);
           },
-          items:
-              filteredTransactionTypes.map<DropdownMenuItem<TransactionType>>(
-            (TransactionType transactionType) {
-              return DropdownMenuItem<TransactionType>(
-                value: transactionType,
-                child: Text(transactionType.name),
-              );
-            },
-          ).toList(),
         ),
       ),
       body: selectedTransactionType == null
-          ? Stack(
+          ? const TransactionTypeSelectionWidget()
+          : const Column(
+              // El Expanded debe estar dentro de un Column o Row
               children: [
-                // Fondo blanco
-                Container(
-                  color: const Color.fromARGB(255, 255, 255, 255),
-                ),
-                // Flechas grandes y animadas (colocadas en la parte superior de la pantalla)
-                Positioned(
-                  top: 30, // Empuja hacia la parte superior
-                  left: 0,
-                  right: 0,
-                  child: Column(
-                    children: [
-                      // Leyenda
-                      // Text(
-                      //   "Seleccione aquí",
-                      //   style: TextStyle(
-                      //     fontSize: 18,
-                      //     color: Colors.grey.shade600,
-                      //     fontStyle: FontStyle.italic,
-                      //   ),
-                      // ),
-                      const SizedBox(height: 10),
-                      // Flecha grande que apunta hacia el dropdown
-                      Icon(
-                        Icons.arrow_upward,
-                        size: 50,
-                        color: Colors.grey.shade800,
-                      ),
-                      const SizedBox(height: 10),
-                      // Flechas laterales
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.arrow_upward,
-                            size: 30,
-                            color: Colors.grey.shade400,
-                          ),
-                          const SizedBox(width: 20),
-                          Icon(
-                            Icons.arrow_upward,
-                            size: 30,
-                            color: Colors.grey.shade400,
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                SelectPaymentMethodButton(),
+                Expanded(
+                  // Aquí funciona correctamente
+                  child: SelectArticleWidget(),
                 ),
               ],
-            )
-          : Center(
-              child: Text(
-                "Total: \$${ref.watch(globalTransactionProvider).transaction?.totalPrice?.toStringAsFixed(2)}",
-                style:
-                    const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
             ),
     );
   }
-}
-
-class CurvedArrowsPainter extends CustomPainter {
-  final double dropdownYPosition;
-
-  CurvedArrowsPainter({required this.dropdownYPosition});
-
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.grey.shade400
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3;
-
-    final Path path1 = Path();
-    path1.moveTo(size.width * 0.25, size.height); // Punto de inicio
-    path1.quadraticBezierTo(
-      size.width * 0.35,
-      size.height * 0.7, // Punto de control 1
-      size.width * 0.5,
-      dropdownYPosition, // Punto final
-    );
-
-    final Path path2 = Path();
-    path2.moveTo(size.width * 0.75, size.height); // Punto de inicio
-    path2.quadraticBezierTo(
-      size.width * 0.65,
-      size.height * 0.7, // Punto de control 2
-      size.width * 0.5,
-      dropdownYPosition, // Punto final
-    );
-
-    canvas.drawPath(path1, paint);
-    canvas.drawPath(path2, paint);
-
-    // Opcional: agregar flechas al final
-    final arrowPaint = Paint()
-      ..color = Colors.grey.shade800
-      ..style = PaintingStyle.fill;
-
-    canvas.drawCircle(
-        Offset(size.width * 0.5, dropdownYPosition), 8, arrowPaint);
-  }
-
-  @override
-  bool shouldRepaint(CustomPainter oldDelegate) => false;
 }

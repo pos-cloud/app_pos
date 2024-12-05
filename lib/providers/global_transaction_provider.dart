@@ -1,4 +1,6 @@
 // providers/global_transaction_provider.dart
+import 'package:app_pos/models/transaction.dart';
+import 'package:app_pos/models/transaction_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/services/transaction_service.dart';
 import 'package:app_pos/models/global_transaction.dart';
@@ -74,6 +76,20 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     } catch (e) {
       throw Exception('Failed to sync transaction');
     }
+  }
+
+  void updateTransactionType(TransactionType? transactionType) {
+    if (transactionType == null) {
+      throw Exception('Transaction type cannot be null');
+    }
+
+    state = state.copyWith(
+        transaction: Transaction(
+          type: transactionType,
+          totalPrice: 0.00,
+        ),
+        movementsOfArticles: [],
+        movementsOfCashes: []);
   }
 }
 

@@ -1,4 +1,6 @@
+import 'package:app_pos/providers/auth_provider.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/models/transaction_movement.dart';
 
 class NavigationDrawerCustom extends StatelessWidget {
@@ -11,14 +13,38 @@ class NavigationDrawerCustom extends StatelessWidget {
     return Drawer(
       child: Column(
         children: [
+          // Logo
           DrawerHeader(
-            child: Center(
-              child: Image.asset(
-                'assets/logo.png',
-                height: 100,
-              ),
+            child: Column(
+              mainAxisAlignment:
+                  MainAxisAlignment.center, // Centrado de los elementos
+              crossAxisAlignment:
+                  CrossAxisAlignment.center, // Alineación centrada
+              children: [
+                Image.asset(
+                  'assets/logo.png',
+                  height: 50,
+                ),
+                const SizedBox(height: 16),
+                const Text(
+                  'Franco Androetto', // Nombre del usuario hardcodeado
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                const Text(
+                  'Administrador', // Correo hardcodeado
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Colors.grey,
+                  ),
+                ),
+              ],
             ),
           ),
+          // Contenido principal del Drawer (transacciones y reporte)
           Expanded(
             child: ListView(
               children: [
@@ -29,7 +55,6 @@ class NavigationDrawerCustom extends StatelessWidget {
                     onTap: () => onItemSelected(movement),
                   );
                 }).toList(),
-                const Divider(), // Línea divisoria
                 ListTile(
                   title: const Text("Report"),
                   leading: const Icon(Icons.assessment, size: 24),
@@ -40,6 +65,28 @@ class NavigationDrawerCustom extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          // Línea divisoria antes de Cerrar sesión
+          const Divider(),
+          // Botón Cerrar sesión
+          Consumer(
+            builder: (context, ref, child) {
+              return ListTile(
+                title: const Text(
+                  "Cerrar sesión",
+                  style: TextStyle(color: Colors.red),
+                ),
+                leading: const Icon(Icons.logout, color: Colors.red, size: 24),
+                onTap: () async {
+                  final authNotifier = ref.read(authProvider.notifier);
+                  await authNotifier.logout(ref);
+
+                  // Redirigir al usuario al login y limpiar el stack de navegación
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                      '/login_screen', (route) => false);
+                },
+              );
+            },
           ),
         ],
       ),

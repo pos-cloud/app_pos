@@ -45,15 +45,12 @@ class ArticleService {
       },
     );
 
-    print(response);
-
     if (response.statusCode == 200) {
       final apiResponse = ApiResponse<List<Article>>.fromJson(
         jsonDecode(response.body),
         (json) => (json as List).map((e) => Article.fromJson(e)).toList(),
       );
 
-      print(apiResponse.result);
       if (apiResponse.status == 200) {
         return apiResponse.result;
       } else {

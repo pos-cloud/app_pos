@@ -94,7 +94,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'Actualizar') {
-                // Ejecutamos el método para cargar los artículos
                 ref.read(articlesProvider.notifier).loadArticles();
               } else {
                 _clearTicket();

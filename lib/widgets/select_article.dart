@@ -1,3 +1,4 @@
+import 'package:app_pos/providers/global_transaction_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/providers/article_provider.dart';
@@ -106,6 +107,19 @@ class SelectArticleWidget extends ConsumerWidget {
                                   fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                           ),
+                          onTap: () {
+                            // Llama al método `addArticleMovement` del provider
+                            ref
+                                .read(globalTransactionProvider.notifier)
+                                .addArticleMovement(article);
+                            // Muestra un SnackBar para confirmar la acción
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                    'Artículo "${article.description}" añadido a la transacción.'),
+                              ),
+                            );
+                          },
                         ),
                       );
                     },

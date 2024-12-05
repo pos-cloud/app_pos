@@ -1,3 +1,5 @@
+import 'package:app_pos/providers/article_provider.dart';
+import 'package:app_pos/providers/global_transaction_provider.dart';
 import 'package:app_pos/services/auth_service.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/services/api_service.dart';
@@ -24,6 +26,27 @@ class AuthNotifier extends StateNotifier<bool> {
     }
     state = false; // Usuario no autenticado
     return false;
+  }
+
+  // Método para cerrar sesión
+  Future<void> logout(WidgetRef ref) async {
+    try {
+      // Eliminar el token guardado
+      await _authService.deleteToken();
+
+      // Reiniciar cualquier estado relacionado
+      _resetAppState(ref);
+
+      // Cambiar el estado a no autenticado
+      state = false;
+    } catch (e) {
+      print('Error al hacer logout: $e');
+    }
+  }
+
+  void _resetAppState(WidgetRef ref) {
+    ref.invalidate(globalTransactionProvider);
+    ref.invalidate(articlesProvider);
   }
 }
 

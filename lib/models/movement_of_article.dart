@@ -3,57 +3,57 @@ import 'category.dart';
 import 'article.dart';
 
 class MovementOfArticle {
-  final String id;
-  final String code;
-  final String description;
-  final String observation;
-  final double basePrice;
-  final double costPrice;
-  final double unitPrice;
-  final double markupPercentage;
-  final double markupPriceWithoutVAT;
-  final double markupPrice;
-  final double discountRate;
-  final double discountAmount;
-  final double transactionDiscountAmount;
-  final double salePrice;
-  final double roundingAmount;
-  final int quotation;
-  final Make make;
-  final Category category;
-  final String barcode;
-  final double amount;
-  final double quantityForStock;
-  final String notes;
-  final int printed;
-  final int read;
+  final String? id;
+  final String? code;
+  final String? description;
+  final String? observation;
+  final double? basePrice;
+  final double? costPrice;
+  final double? unitPrice;
+  final double? markupPercentage;
+  final double? markupPriceWithoutVAT;
+  final double? markupPrice;
+  final double? discountRate;
+  final double? discountAmount;
+  final double? transactionDiscountAmount;
+  final double? salePrice;
+  final double? roundingAmount;
+  final int? quotation;
+  final Make? make;
+  final Category? category;
+  final String? barcode;
+  final double? amount;
+  final double? quantityForStock;
+  final String? notes;
+  final int? printed;
+  final int? read;
   final Article article;
 
   MovementOfArticle({
-    required this.id,
-    required this.code,
-    required this.description,
-    required this.observation,
-    required this.basePrice,
-    required this.costPrice,
-    required this.unitPrice,
-    required this.markupPercentage,
-    required this.markupPriceWithoutVAT,
-    required this.markupPrice,
-    required this.discountRate,
-    required this.discountAmount,
-    required this.transactionDiscountAmount,
-    required this.salePrice,
-    required this.roundingAmount,
-    required this.quotation,
-    required this.make,
-    required this.category,
-    required this.barcode,
-    required this.amount,
-    required this.quantityForStock,
-    required this.notes,
-    required this.printed,
-    required this.read,
+    this.id,
+    this.code,
+    this.description,
+    this.observation,
+    this.basePrice,
+    this.costPrice,
+    this.unitPrice,
+    this.markupPercentage,
+    this.markupPriceWithoutVAT,
+    this.markupPrice,
+    this.discountRate,
+    this.discountAmount,
+    this.transactionDiscountAmount,
+    this.salePrice,
+    this.roundingAmount,
+    this.quotation,
+    this.make,
+    this.category,
+    this.barcode,
+    this.amount,
+    this.quantityForStock,
+    this.notes,
+    this.printed,
+    this.read,
     required this.article,
   });
 
@@ -106,8 +106,8 @@ class MovementOfArticle {
       'salePrice': salePrice,
       'roundingAmount': roundingAmount,
       'quotation': quotation,
-      'make': make.toJson(),
-      'category': category.toJson(),
+      'make': make?.toJson(),
+      'category': category?.toJson(),
       'barcode': barcode,
       'amount': amount,
       'quantityForStock': quantityForStock,

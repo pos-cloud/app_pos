@@ -1,4 +1,6 @@
 // providers/global_transaction_provider.dart
+import 'package:app_pos/models/article.dart';
+import 'package:app_pos/models/movement_of_article.dart';
 import 'package:app_pos/models/transaction.dart';
 import 'package:app_pos/models/transaction_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -15,53 +17,29 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
           movementsOfCashes: [],
         ));
 
-  void addArticleMovement(dynamic article) {
-    state = state.copyWith(
-      movementsOfArticles: [...state.movementsOfArticles, article],
+  void addArticleMovement(Article article) {
+    final movement = MovementOfArticle(
+      description: article.description,
+      basePrice: article.salePrice,
+      unitPrice: article.salePrice,
+      salePrice: article.salePrice,
+      amount: 1,
+      article: article,
     );
-    //updateTotalPrice();
+
+    final updatedMovements = [...state.movementsOfArticles, movement];
+    final updatedTotalPrice =
+        (state.transaction?.totalPrice ?? 0.0) + article.salePrice;
+
+    state = state.copyWith(
+      movementsOfArticles: updatedMovements,
+      transaction: state.transaction?.copyWith(totalPrice: updatedTotalPrice),
+    );
   }
 
   void resetTransaction() {
     state = state.reset();
   }
-
-  // void setRandomTotalPrice() {
-  //   double randomPrice = Random().nextDouble() * 1000;
-  //   state = state.copyWith(transaction: {'totalPrice': randomPrice});
-  // }
-
-  // // Método para agregar un movimiento de efectivo
-  // void addCashMovement(dynamic cashMovement) {
-  //   state = state.copyWith(
-  //     movementsOfCashes: [...state.movementsOfCashes, cashMovement],
-  //   );
-  //   updateTotalPrice();
-  // }
-
-  // // Método para actualizar el total de la transacción (por ejemplo, después de agregar un artículo o cash)
-  // void updateTotalPrice() {
-  //   // Aquí se podría implementar la lógica para recalcular el total de la transacción
-  //   // y actualizar el campo 'transaction' si es necesario.
-  //   // Por ejemplo:
-  //   final totalPrice = calculateTotalPrice();
-  //   state = state.copyWith(
-  //     transaction: {...state.transaction, 'totalPrice': totalPrice},
-  //   );
-  // }
-
-  // double calculateTotalPrice() {
-  //   double totalPrice = 0;
-  //   for (var article in state.movementsOfArticles) {
-  //     // Asumimos que cada artículo tiene un precio
-  //     totalPrice += article['price'];
-  //   }
-  //   for (var cash in state.movementsOfCashes) {
-  //     // Lo mismo para los movimientos de efectivo
-  //     totalPrice += cash['amount'];
-  //   }
-  //   return totalPrice;
-  // }
 
   // Método para hacer el fetch de la transacción (simulación del post)
   Future<void> syncTransaction() async {

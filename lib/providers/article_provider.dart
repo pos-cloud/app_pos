@@ -15,6 +15,18 @@ class ArticleNotifier extends StateNotifier<List<Article>> {
       state = [];
     }
   }
+
+  Future<void> searchArticles(String query) async {
+    try {
+      // Llamamos a `getArticles` con el filtro opcional
+      state = [];
+      final articles = await _articleService.getArticles(searchQuery: query);
+      state = articles;
+    } catch (e) {
+      print('Error al cargar searchArticle: $e');
+      state = []; // Manejo de errores: dejamos la lista vacía
+    }
+  }
 }
 
 final articlesProvider = StateNotifierProvider<ArticleNotifier, List<Article>>(

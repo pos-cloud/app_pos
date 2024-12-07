@@ -1,41 +1,24 @@
 import 'dart:convert';
+import 'package:app_pos/models/payment_method.dart';
 import 'package:http/http.dart' as http;
-import 'package:app_pos/models/article.dart';
 import 'package:app_pos/services/auth_service.dart';
 import 'package:app_pos/config.dart';
 
-class ArticleService {
+class PaymentMethodService {
   final AuthService _authService = AuthService();
 
   // Método para obtener los artículos
-  Future<List<Article>> getArticles({String? searchQuery}) async {
+  Future<List<PaymentMethod>> getPaymentMethod() async {
     final token = await _authService.getToken();
 
-    final project = jsonEncode({
-      'code': 1,
-      'description': 1,
-      'posDescription': 1,
-      'salePrice': 1,
-      'picture': 1,
-      'operationType': 1,
-      'type': 1
-    });
+    final project = jsonEncode({'name': 1, 'operationType': 1});
     final sort = jsonEncode({"name": 1});
     const limit = 100;
 
     // Construimos el filtro `match`
     final Map<String, dynamic> match = {
-      "operationType": {"\$ne": "D"},
-      "type": {"\$eq": "Final"}
+      "operationType": {"\$ne": "D"}
     };
-
-    // Si hay una búsqueda, la agregamos al filtro
-    if (searchQuery != null && searchQuery.isNotEmpty) {
-      match["description"] = {
-        "\$regex": searchQuery,
-        "\$options": "i" // Insensible a mayúsculas y minúsculas
-      };
-    }
 
     // Convertimos el filtro a JSON
     final matchJson = jsonEncode(match);
@@ -48,7 +31,7 @@ class ArticleService {
 
     final groupJson = jsonEncode(group);
 
-    final url = Uri.parse('${Config.apiUrl}/articles').replace(
+    final url = Uri.parse('${Config.apiUrl}/payment-methods').replace(
       queryParameters: {
         'project': project,
         'match': matchJson,
@@ -71,12 +54,12 @@ class ArticleService {
     if (response.statusCode == 200) {
       final items = responseBody['result'][0]['items'];
 
-      List<Article> articles =
-          items.map<Article>((e) => Article.fromJson(e)).toList();
+      List<PaymentMethod> paymentMethod =
+          items.map<PaymentMethod>((e) => PaymentMethod.fromJson(e)).toList();
 
-      return articles;
+      return paymentMethod;
     } else {
-      throw Exception('Error al obtener artículos');
+      throw Exception('Error al obtener metodos de pago');
     }
   }
 }

@@ -6,7 +6,7 @@ import 'package:http/http.dart' as http;
 class TransactionService {
   final AuthService _authService = AuthService();
 
-  Future<void> syncTransaction(Map<String, dynamic> transaction) async {
+  Future<String> syncTransaction(Map<String, dynamic> transaction) async {
     final url = Uri.parse('${Config.apiUrl}/transactions/create');
 
     final token = await _authService.getToken();
@@ -21,8 +21,21 @@ class TransactionService {
     );
 
     if (response.statusCode != 200) {
+      // Incluye el cuerpo de la respuesta en el mensaje de error
+      final errorMessage =
+          json.decode(response.body)['message'] ?? response.body;
       throw Exception(
-          'Failed to sync transaction. Status code: ${response.statusCode}');
+          'Failed to sync transaction. Status code: ${response.statusCode}. Error: $errorMessage');
     }
+
+    final responseData = json.decode(response.body);
+
+    if (!responseData.containsKey('transactionId')) {
+      throw Exception(
+          'La respuesta no contiene un transactionId: $responseData');
+    }
+
+    // Devolvemos el ID
+    return responseData['transactionId'] as String;
   }
 }

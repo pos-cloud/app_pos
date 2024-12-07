@@ -1,4 +1,5 @@
 import 'package:app_pos/providers/global_transaction_provider.dart';
+import 'package:app_pos/screens/payment_method_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -21,8 +22,12 @@ class SelectPaymentMethodButton extends ConsumerWidget {
       height: buttonHeight, // 15% de la altura de la pantalla
       child: ElevatedButton(
         onPressed: () {
-          // Aquí iría la lógica para seleccionar el método de pago
-          print("Método de pago seleccionado");
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PaymentMethodScreen(),
+            ),
+          );
         },
         style: ElevatedButton.styleFrom(
           shape: RoundedRectangleBorder(

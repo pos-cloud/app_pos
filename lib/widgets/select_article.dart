@@ -1,13 +1,34 @@
+import 'dart:async';
 import 'package:app_pos/providers/global_transaction_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/providers/article_provider.dart';
 
-class SelectArticleWidget extends ConsumerWidget {
+class SelectArticleWidget extends ConsumerStatefulWidget {
   const SelectArticleWidget({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<SelectArticleWidget> createState() =>
+      _SelectArticleWidgetState();
+}
+
+class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
+  late final _Debouncer _debouncer;
+
+  @override
+  void initState() {
+    super.initState();
+    _debouncer = _Debouncer(milliseconds: 500);
+  }
+
+  @override
+  void dispose() {
+    _debouncer._timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final articles = ref.watch(articlesProvider);
 
     return Container(
@@ -22,6 +43,14 @@ class SelectArticleWidget extends ConsumerWidget {
               children: [
                 Expanded(
                   child: TextField(
+                    onChanged: (text) {
+                      _debouncer.run(() {
+                        // Llama al método de búsqueda en el provider
+                        ref
+                            .read(articlesProvider.notifier)
+                            .searchArticles(text);
+                      });
+                    },
                     decoration: InputDecoration(
                       hintText: 'Buscar artículo...',
                       border: OutlineInputBorder(
@@ -38,19 +67,13 @@ class SelectArticleWidget extends ConsumerWidget {
                   tooltip: 'Escanear código de barras',
                   padding: const EdgeInsets.all(0),
                 ),
-                IconButton(
-                  onPressed: () {},
-                  icon: const Icon(Icons.search),
-                  tooltip: 'Buscar artículo',
-                  padding: const EdgeInsets.all(0),
-                ),
               ],
             ),
           ),
           // Aquí envolvemos el ListView.builder en un Expanded
           Expanded(
             child: articles.isEmpty
-                ? const Center(child: Text('No se encontraron artículos'))
+                ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(
                     itemCount: articles.length,
                     itemBuilder: (context, index) {
@@ -66,16 +89,23 @@ class SelectArticleWidget extends ConsumerWidget {
                         ),
                         child: ListTile(
                           contentPadding: const EdgeInsets.symmetric(
-                              vertical: 6.0,
-                              horizontal: 0), // Ajustamos el padding
+                              vertical: 6.0, horizontal: 0),
                           leading: ClipRRect(
                             borderRadius: BorderRadius.circular(5),
-                            child: article.picture != null
+                            child: (isValidUrl(article.picture))
                                 ? Image.network(
-                                    article.picture!,
-                                    width: 40, // Reducir el tamaño de la imagen
+                                    article.picture,
+                                    width: 40,
                                     height: 40,
                                     fit: BoxFit.cover,
+                                    errorBuilder: (context, error, stackTrace) {
+                                      return Container(
+                                        width: 40,
+                                        height: 40,
+                                        color: Colors.grey.shade300,
+                                        child: const Icon(Icons.broken_image),
+                                      );
+                                    },
                                   )
                                 : Container(
                                     width: 40,
@@ -86,37 +116,33 @@ class SelectArticleWidget extends ConsumerWidget {
                           ),
                           title: Row(
                             children: [
-                              // Descripción del artículo (más grande y más cerca de la foto)
                               Expanded(
                                 child: Text(
-                                  article.posDescription ?? 'Sin descripción',
+                                  article.posDescription,
                                   style: const TextStyle(
                                       fontWeight: FontWeight.normal,
-                                      fontSize:
-                                          14), // Mantener texto más pequeño
+                                      fontSize: 14),
                                 ),
                               ),
                             ],
                           ),
                           trailing: Padding(
-                            padding: const EdgeInsets.only(
-                                right: 8.0), // Ajuste en el precio
+                            padding: const EdgeInsets.only(right: 8.0),
                             child: Text(
-                              '\$${article.salePrice?.toStringAsFixed(2) ?? "N/A"}',
+                              '\$${article.salePrice.toStringAsFixed(2)}',
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                           ),
                           onTap: () {
-                            // Llama al método `addArticleMovement` del provider
                             ref
                                 .read(globalTransactionProvider.notifier)
                                 .addArticleMovement(article);
-                            // Muestra un SnackBar para confirmar la acción
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(
                                     'Artículo "${article.description}" añadido a la transacción.'),
+                                duration: const Duration(milliseconds: 500),
                               ),
                             );
                           },
@@ -129,4 +155,22 @@ class SelectArticleWidget extends ConsumerWidget {
       ),
     );
   }
+}
+
+class _Debouncer {
+  _Debouncer({required this.milliseconds});
+  final int milliseconds;
+  Timer? _timer;
+
+  void run(void Function() action) {
+    _timer?.cancel();
+    _timer = Timer(Duration(milliseconds: milliseconds), action);
+  }
+}
+
+bool isValidUrl(String url) {
+  final uri = Uri.tryParse(url);
+  return uri != null &&
+      uri.hasAbsolutePath &&
+      (url.startsWith('http://') || url.startsWith('https://'));
 }

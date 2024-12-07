@@ -1,58 +1,58 @@
 import 'article.dart'; // Asegúrate de tener este modelo importado
 
 class PaymentMethod {
-  final String id;
-  final int order;
-  final int code;
+  final String? id;
+  final int? order;
+  final int? code;
   final String name;
-  final double discount;
-  final Article discountArticle;
-  final double surcharge;
-  final Article surchargeArticle;
-  final double commission;
-  final Article commissionArticle;
-  final double administrativeExpense;
-  final Article administrativeExpenseArticle;
-  final double otherExpense;
-  final Article otherExpenseArticle;
-  final bool isCurrentAccount;
-  final int expirationDays;
-  final bool acceptReturned;
-  final bool inputAndOutput;
-  final bool checkDetail;
-  final bool checkPerson;
-  final bool cardDetail;
-  final bool allowToFinance;
-  final bool payFirstQuota;
-  final bool cashBoxImpact;
-  final bool bankReconciliation;
+  final double? discount;
+  final Article? discountArticle;
+  final double? surcharge;
+  final Article? surchargeArticle;
+  final double? commission;
+  final Article? commissionArticle;
+  final double? administrativeExpense;
+  final Article? administrativeExpenseArticle;
+  final double? otherExpense;
+  final Article? otherExpenseArticle;
+  final bool? isCurrentAccount;
+  final int? expirationDays;
+  final bool? acceptReturned;
+  final bool? inputAndOutput;
+  final bool? checkDetail;
+  final bool? checkPerson;
+  final bool? cardDetail;
+  final bool? allowToFinance;
+  final bool? payFirstQuota;
+  final bool? cashBoxImpact;
+  final bool? bankReconciliation;
 
   PaymentMethod({
-    required this.id,
-    required this.order,
-    required this.code,
+    this.id,
+    this.order,
+    this.code,
     required this.name,
-    required this.discount,
-    required this.discountArticle,
-    required this.surcharge,
-    required this.surchargeArticle,
-    required this.commission,
-    required this.commissionArticle,
-    required this.administrativeExpense,
-    required this.administrativeExpenseArticle,
-    required this.otherExpense,
-    required this.otherExpenseArticle,
-    required this.isCurrentAccount,
-    required this.expirationDays,
-    required this.acceptReturned,
-    required this.inputAndOutput,
-    required this.checkDetail,
-    required this.checkPerson,
-    required this.cardDetail,
-    required this.allowToFinance,
-    required this.payFirstQuota,
-    required this.cashBoxImpact,
-    required this.bankReconciliation,
+    this.discount,
+    this.discountArticle,
+    this.surcharge,
+    this.surchargeArticle,
+    this.commission,
+    this.commissionArticle,
+    this.administrativeExpense,
+    this.administrativeExpenseArticle,
+    this.otherExpense,
+    this.otherExpenseArticle,
+    this.isCurrentAccount,
+    this.expirationDays,
+    this.acceptReturned,
+    this.inputAndOutput,
+    this.checkDetail,
+    this.checkPerson,
+    this.cardDetail,
+    this.allowToFinance,
+    this.payFirstQuota,
+    this.cashBoxImpact,
+    this.bankReconciliation,
   });
 
   factory PaymentMethod.fromJson(Map<String, dynamic> json) {
@@ -93,15 +93,15 @@ class PaymentMethod {
       'code': code,
       'name': name,
       'discount': discount,
-      'discountArticle': discountArticle.toJson(),
+      'discountArticle': discountArticle?.toJson(),
       'surcharge': surcharge,
-      'surchargeArticle': surchargeArticle.toJson(),
+      'surchargeArticle': surchargeArticle?.toJson(),
       'commission': commission,
-      'commissionArticle': commissionArticle.toJson(),
+      'commissionArticle': commissionArticle?.toJson(),
       'administrativeExpense': administrativeExpense,
-      'administrativeExpenseArticle': administrativeExpenseArticle.toJson(),
+      'administrativeExpenseArticle': administrativeExpenseArticle?.toJson(),
       'otherExpense': otherExpense,
-      'otherExpenseArticle': otherExpenseArticle.toJson(),
+      'otherExpenseArticle': otherExpenseArticle?.toJson(),
       'isCurrentAccount': isCurrentAccount,
       'expirationDays': expirationDays,
       'acceptReturned': acceptReturned,

@@ -1,6 +1,8 @@
 // providers/global_transaction_provider.dart
 import 'package:app_pos/models/article.dart';
 import 'package:app_pos/models/movement_of_article.dart';
+import 'package:app_pos/models/movement_of_cash.dart';
+import 'package:app_pos/models/payment_method.dart';
 import 'package:app_pos/models/transaction.dart';
 import 'package:app_pos/models/transaction_type.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -37,22 +39,34 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     );
   }
 
+  void addMovementOfCash(PaymentMethod paymentMethod) {
+    final movement = MovementOfCash(type: paymentMethod);
+
+    final updateMovements = [...state.movementsOfCashes, movement];
+
+    state = state.copyWith(movementsOfCashes: updateMovements);
+  }
+
+  void sendMail(String id, String email) {}
+
   void resetTransaction() {
     state = state.reset();
   }
 
   // Método para hacer el fetch de la transacción (simulación del post)
-  Future<void> syncTransaction() async {
+  Future<String> syncTransaction() async {
     try {
-      await transactionService.syncTransaction({
+      final transactionId = await transactionService.syncTransaction({
         'transaction': state.transaction,
         'movementsOfArticles': state.movementsOfArticles,
         'movementsOfCashes': state.movementsOfCashes,
       });
 
       state = state.reset();
+
+      return transactionId;
     } catch (e) {
-      throw Exception('Failed to sync transaction');
+      throw Exception('$e');
     }
   }
 
@@ -63,9 +77,7 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
 
     state = state.copyWith(
         transaction: Transaction(
-          type: transactionType,
-          totalPrice: 0.00,
-        ),
+            type: transactionType, totalPrice: 0.00, state: "Cerrado"),
         movementsOfArticles: [],
         movementsOfCashes: []);
   }

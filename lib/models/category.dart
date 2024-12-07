@@ -1,30 +1,26 @@
 class Category {
-  final String id;
-  final int order;
-  final String description;
-  final String picture;
-  final bool visibleInvoice;
-  final bool visibleOnSale;
-  final bool visibleOnPurchase;
-  final bool favourite;
-  final Category? parent; // Puede ser null para las categorías raíz
-  final String observation;
-  final String tiendaNubeId;
-  final bool showMenu;
+  final String? id;
+  final int? order;
+  final String? description;
+  final String? picture;
+  final bool? visibleInvoice;
+  final bool? visibleOnSale;
+  final bool? visibleOnPurchase;
+  final bool? favourite;
+  final String? observation;
+  final bool? showMenu;
 
   Category({
-    required this.id,
-    required this.order,
-    required this.description,
-    required this.picture,
-    required this.visibleInvoice,
-    required this.visibleOnSale,
-    required this.visibleOnPurchase,
-    required this.favourite,
-    this.parent,
-    required this.observation,
-    required this.tiendaNubeId,
-    required this.showMenu,
+    this.id,
+    this.order,
+    this.description,
+    this.picture,
+    this.visibleInvoice,
+    this.visibleOnSale,
+    this.visibleOnPurchase,
+    this.favourite,
+    this.observation,
+    this.showMenu,
   });
 
   factory Category.fromJson(Map<String, dynamic> json) {
@@ -37,11 +33,7 @@ class Category {
       visibleOnSale: json['visibleOnSale'] ?? false,
       visibleOnPurchase: json['visibleOnPurchase'] ?? false,
       favourite: json['favourite'] ?? false,
-      parent: json['parent'] != null
-          ? Category.fromJson(json['parent'])
-          : null, // Recursión para anidar categorías
       observation: json['observation'] ?? '',
-      tiendaNubeId: json['tiendaNubeId'] ?? '',
       showMenu: json['showMenu'] ?? false,
     );
   }
@@ -56,9 +48,7 @@ class Category {
       'visibleOnSale': visibleOnSale,
       'visibleOnPurchase': visibleOnPurchase,
       'favourite': favourite,
-      'parent': parent?.toJson(), // Conversión recursiva
       'observation': observation,
-      'tiendaNubeId': tiendaNubeId,
       'showMenu': showMenu,
     };
   }

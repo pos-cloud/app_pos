@@ -1,43 +1,43 @@
 import 'package:app_pos/models/payment_method.dart';
 
 class MovementOfCash {
-  final String id;
-  final String date;
-  final int quota;
-  final String expirationDate;
-  final double discount;
-  final double surcharge;
-  final double commissionAmount;
-  final double administrativeExpenseAmount;
-  final double otherExpenseAmount;
-  final double capital;
-  final double interestPercentage;
-  final double interestAmount;
-  final double taxPercentage;
-  final double taxAmount;
-  final double amountPaid;
-  final double amountDiscount;
-  final String observation;
+  final String? id;
+  final String? date;
+  final int? quota;
+  final String? expirationDate;
+  final double? discount;
+  final double? surcharge;
+  final double? commissionAmount;
+  final double? administrativeExpenseAmount;
+  final double? otherExpenseAmount;
+  final double? capital;
+  final double? interestPercentage;
+  final double? interestAmount;
+  final double? taxPercentage;
+  final double? taxAmount;
+  final double? amountPaid;
+  final double? amountDiscount;
+  final String? observation;
   final PaymentMethod type;
 
   MovementOfCash({
-    required this.id,
-    required this.date,
-    required this.quota,
-    required this.expirationDate,
-    required this.discount,
-    required this.surcharge,
-    required this.commissionAmount,
-    required this.administrativeExpenseAmount,
-    required this.otherExpenseAmount,
-    required this.capital,
-    required this.interestPercentage,
-    required this.interestAmount,
-    required this.taxPercentage,
-    required this.taxAmount,
-    required this.amountPaid,
-    required this.amountDiscount,
-    required this.observation,
+    this.id,
+    this.date,
+    this.quota,
+    this.expirationDate,
+    this.discount,
+    this.surcharge,
+    this.commissionAmount,
+    this.administrativeExpenseAmount,
+    this.otherExpenseAmount,
+    this.capital,
+    this.interestPercentage,
+    this.interestAmount,
+    this.taxPercentage,
+    this.taxAmount,
+    this.amountPaid,
+    this.amountDiscount,
+    this.observation,
     required this.type,
   });
 

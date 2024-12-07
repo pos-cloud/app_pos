@@ -1,6 +1,8 @@
 import 'package:app_pos/providers/article_provider.dart';
+import 'package:app_pos/providers/category_provider.dart';
+import 'package:app_pos/providers/payment_method_provider.dart';
 import 'package:app_pos/widgets/select_article.dart';
-import 'package:app_pos/widgets/select_payment_method.dart';
+import 'package:app_pos/widgets/select_payment_method_button.dart';
 import 'package:app_pos/widgets/transaction_type_selection.dart';
 import 'package:app_pos/widgets/transaction_type_selector.dart';
 import 'package:flutter/material.dart';
@@ -33,6 +35,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     Future.microtask(() {
       ref.read(transactionTypeProvider.notifier).loadTransactionTypes();
       ref.read(articlesProvider.notifier).loadArticles();
+      ref.read(categoryProvider.notifier).loadCategories();
+      ref.read(paymentMethodProvider.notifier).loadMethodPayment();
     });
 
     // Abrir el drawer automáticamente tras la construcción inicial.
@@ -58,6 +62,12 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     setState(() {
       selectedTransactionType = null;
     });
+  }
+
+  void _refresh() {
+    ref.read(articlesProvider.notifier).loadArticles();
+    ref.read(categoryProvider.notifier).loadCategories();
+    ref.read(paymentMethodProvider.notifier).loadMethodPayment();
   }
 
   @override
@@ -94,7 +104,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'Actualizar') {
-                ref.read(articlesProvider.notifier).loadArticles();
+                _refresh();
               } else {
                 _clearTicket();
               }

@@ -137,7 +137,7 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
                           onTap: () {
                             ref
                                 .read(globalTransactionProvider.notifier)
-                                .addArticleMovement(article);
+                                .addMovementOfArticle(article);
                             ScaffoldMessenger.of(context).showSnackBar(
                               SnackBar(
                                 content: Text(

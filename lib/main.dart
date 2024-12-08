@@ -14,13 +14,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'POS App', // Cambia el título si es necesario
+      title: 'Pos Cloud',
       color: Colors.white,
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.lightTheme, // Tema claro
-      darkTheme: AppTheme.darkTheme, // Tema oscuro
-      themeMode:
-          ThemeMode.dark, // Usar el tema según la preferencia del sistema
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
+      themeMode: ThemeMode.dark,
       initialRoute: LoginScreen.path,
       routes: {
         LoginScreen.path: (context) => const LoginScreen(),

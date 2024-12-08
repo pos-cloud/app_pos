@@ -1,4 +1,3 @@
-// providers/global_transaction_provider.dart
 import 'package:app_pos/models/article.dart';
 import 'package:app_pos/models/movement_of_article.dart';
 import 'package:app_pos/models/movement_of_cash.dart';
@@ -19,7 +18,7 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
           movementsOfCashes: [],
         ));
 
-  void addArticleMovement(Article article) {
+  void addMovementOfArticle(Article article) {
     final movement = MovementOfArticle(
       description: article.description,
       basePrice: article.salePrice,
@@ -39,12 +38,26 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     );
   }
 
-  void addMovementOfCash(PaymentMethod paymentMethod) {
-    final movement = MovementOfCash(type: paymentMethod);
+  void deleteMovementOfArticle(int index) {
+    final updatedMovements =
+        List<MovementOfArticle>.from(state.movementsOfArticles);
+    updatedMovements.removeAt(index);
+
+    state = state.copyWith(movementsOfArticles: updatedMovements);
+  }
+
+  void addMovementOfCash(PaymentMethod paymentMethod, double amount) {
+    final movement = MovementOfCash(type: paymentMethod, amountPaid: amount);
 
     final updateMovements = [...state.movementsOfCashes, movement];
 
     state = state.copyWith(movementsOfCashes: updateMovements);
+  }
+
+  void deleteMovementOfCash(MovementOfCash movement) {
+    final updatedMovements = List<MovementOfCash>.from(state.movementsOfCashes);
+    updatedMovements.remove(movement);
+    state = state.copyWith(movementsOfCashes: updatedMovements);
   }
 
   void sendMail(String id, String email) {}
@@ -53,7 +66,6 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     state = state.reset();
   }
 
-  // Método para hacer el fetch de la transacción (simulación del post)
   Future<String> syncTransaction() async {
     try {
       final transactionId = await transactionService.syncTransaction({

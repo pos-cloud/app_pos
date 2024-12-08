@@ -1,7 +1,7 @@
 import 'package:app_pos/providers/article_provider.dart';
 import 'package:app_pos/providers/category_provider.dart';
 import 'package:app_pos/providers/payment_method_provider.dart';
-import 'package:app_pos/screens/movement_of_articles.dart';
+import 'package:app_pos/screens/movement_of_articles_screen.dart';
 import 'package:app_pos/widgets/delete_transaction_dialog.dart';
 import 'package:app_pos/widgets/finish_transaction_button.dart';
 import 'package:app_pos/widgets/select_article.dart';
@@ -34,7 +34,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   void initState() {
     super.initState();
 
-    // Cargar los datos iniciales.
     Future.microtask(() {
       ref.read(transactionTypeProvider.notifier).loadTransactionTypes();
       ref.read(articlesProvider.notifier).loadArticles();

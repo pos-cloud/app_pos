@@ -13,15 +13,12 @@ class DeleteTransactionDialog extends ConsumerWidget {
           const Text("¿Estás seguro de que deseas eliminar la transacción?"),
       actions: [
         TextButton(
-          onPressed: () => Navigator.of(context).pop(), // Cierra el modal
+          onPressed: () => Navigator.of(context).pop(),
           child: const Text("No"),
         ),
         TextButton(
           onPressed: () {
-            // Limpia la transacción
             ref.read(globalTransactionProvider.notifier).resetTransaction();
-
-            // Cierra el modal
             Navigator.of(context).pop();
           },
           child: const Text("Sí"),

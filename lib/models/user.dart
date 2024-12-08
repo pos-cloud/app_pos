@@ -13,7 +13,6 @@ class User {
     required this.permissions,
   });
 
-  // Método para crear un usuario desde JSON
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
       id: json['_id'],

@@ -2,7 +2,7 @@ import 'package:app_pos/screens/login_screen.dart';
 import 'package:app_pos/screens/main_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'styles/theme.dart'; // Asegúrate de importar tu archivo de tema
+import 'styles/theme.dart';
 
 void main() {
   runApp(const ProviderScope(child: MyApp()));

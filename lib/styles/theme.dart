@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 class AppTheme {
-  // Colores principales extraídos del logo
   static const Color primaryColor = Color(0xFF0275D8); // Azul intenso
   static const Color secondaryColor = Color(0xFFE8F1F8); // Azul claro pastel
   static const Color backgroundColorLight = Color(0xFFFFFFFF); // Blanco

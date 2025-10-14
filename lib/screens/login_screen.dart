@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/providers/auth_provider.dart';
 import 'package:app_pos/screens/main_screen.dart';
+import 'package:app_pos/services/auth_service.dart';
 
 class LoginScreen extends ConsumerStatefulWidget {
   static String path = '/login_screen';
@@ -16,6 +17,23 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final TextEditingController negocioController = TextEditingController();
   final TextEditingController usuarioController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final AuthService _authService = AuthService();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedBusiness();
+  }
+
+  // Cargar el nombre del negocio guardado
+  Future<void> _loadSavedBusiness() async {
+    final savedBusiness = await _authService.getBusiness();
+    if (savedBusiness != null && savedBusiness.isNotEmpty) {
+      setState(() {
+        negocioController.text = savedBusiness;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -32,7 +50,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 'assets/logo.png',
                 height: 130,
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 50),
               // Campos de texto
               TextField(
                 controller: negocioController,
@@ -68,10 +86,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   labelText: "Password",
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               // Botón para iniciar sesión
               SizedBox(
                 width: double.infinity,
+                height: 60,
                 child: ElevatedButton(
                   style: ButtonStyle(
                     backgroundColor:
@@ -91,6 +110,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             );
 
                     if (authSuccess) {
+                      // Guardar el nombre del negocio para futuros logins
+                      await _authService.saveBusiness(negocioController.text);
+
                       Navigator.pushReplacementNamed(context, MainScreen.path);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -100,7 +122,11 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   },
                   child: const Text(
                     'Iniciar sesión',
-                    style: TextStyle(color: Colors.white),
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
                 ),
               ),

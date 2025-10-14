@@ -21,6 +21,21 @@ class AuthService {
     await _storage.delete(key: 'auth_token');
   }
 
+  // Guardar el nombre del negocio
+  Future<void> saveBusiness(String business) async {
+    await _storage.write(key: 'business_name', value: business);
+  }
+
+  // Leer el nombre del negocio
+  Future<String?> getBusiness() async {
+    return await _storage.read(key: 'business_name');
+  }
+
+  // Eliminar el nombre del negocio (si es necesario)
+  Future<void> deleteBusiness() async {
+    await _storage.delete(key: 'business_name');
+  }
+
   Future<String?> login(
       String database, String username, String password) async {
     final response = await http.post(

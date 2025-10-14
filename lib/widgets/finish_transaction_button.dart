@@ -1,3 +1,4 @@
+import 'package:app_pos/providers/global_transaction_provider.dart';
 import 'package:app_pos/screens/finish_transaction_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,7 +12,7 @@ class FinishTransactionButton extends ConsumerWidget {
       onPressed: () async {
         try {
           // final notifier = ref.read(globalTransactionProvider.notifier);
-          //final transactionId = await notifier.syncTransaction();
+          // final transactionId = await notifier.syncTransaction();
 
           Navigator.pushAndRemoveUntil(
             context,

@@ -1,4 +1,5 @@
 import 'package:app_pos/models/article.dart';
+import 'package:app_pos/models/company.dart';
 import 'package:app_pos/models/movement_of_article.dart';
 import 'package:app_pos/models/movement_of_cash.dart';
 import 'package:app_pos/models/payment_method.dart';
@@ -92,6 +93,16 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
             type: transactionType, totalPrice: 0.00, state: "Cerrado"),
         movementsOfArticles: [],
         movementsOfCashes: []);
+  }
+
+  void updateCompany(Company company) {
+    if (state.transaction == null) {
+      throw Exception('No active transaction');
+    }
+
+    state = state.copyWith(
+      transaction: state.transaction!.copyWith(company: company),
+    );
   }
 }
 

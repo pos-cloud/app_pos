@@ -13,8 +13,12 @@ class TransactionTypeService {
     final token =
         await _authService.getToken(); // Obtenemos el token desde AuthService
 
-    final project =
-        jsonEncode({'name': 1, 'transactionMovement': 1, 'operationType': 1});
+    final project = jsonEncode({
+      'name': 1,
+      'transactionMovement': 1,
+      'operationType': 1,
+      'requestCompany': 1
+    });
     final match = jsonEncode({
       'operationType': {'\$ne': 'D'}
     });

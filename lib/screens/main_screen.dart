@@ -1,6 +1,8 @@
 import 'package:app_pos/providers/article_provider.dart';
 import 'package:app_pos/providers/category_provider.dart';
+import 'package:app_pos/providers/company_provider.dart';
 import 'package:app_pos/providers/payment_method_provider.dart';
+import 'package:app_pos/screens/company_screen.dart';
 import 'package:app_pos/screens/movement_of_articles_screen.dart';
 import 'package:app_pos/widgets/delete_transaction_dialog.dart';
 import 'package:app_pos/widgets/finish_transaction_button.dart';
@@ -39,6 +41,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ref.read(articlesProvider.notifier).loadArticles();
       ref.read(categoryProvider.notifier).loadCategories();
       ref.read(paymentMethodProvider.notifier).loadMethodPayment();
+      ref.read(companyProvider.notifier).loadCompanies();
     });
 
     // Abrir el drawer automáticamente tras la construcción inicial.
@@ -62,6 +65,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     ref.read(articlesProvider.notifier).loadArticles();
     ref.read(categoryProvider.notifier).loadCategories();
     ref.read(paymentMethodProvider.notifier).loadMethodPayment();
+    ref.read(companyProvider.notifier).loadCompanies();
   }
 
   @override
@@ -157,6 +161,23 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 },
               ),
         actions: [
+          if (isTransactionActive &&
+              currentTransaction.type.requestCompany != null)
+            IconButton(
+              icon: Icon(
+                currentTransaction.company == null
+                    ? Icons.person_add
+                    : Icons.person,
+              ),
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const CompanyScreen(),
+                  ),
+                );
+              },
+            ),
           PopupMenuButton<String>(
             onSelected: (value) {
               if (value == 'Actualizar') {

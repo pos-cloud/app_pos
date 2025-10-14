@@ -48,6 +48,14 @@ class NavigationDrawerCustom extends StatelessWidget {
           Expanded(
             child: ListView(
               children: [
+                // ListTile(
+                //   title: const Text("Pendientes"),
+                //   leading: const Icon(Icons.assessment, size: 24),
+                //   onTap: () {
+                //     Navigator.of(context).pushNamed('/transactions');
+                //   },
+                // ),
+                const Divider(),
                 ...TransactionMovement.values.map((movement) {
                   return ListTile(
                     title: Text(movement.name),
@@ -59,16 +67,13 @@ class NavigationDrawerCustom extends StatelessWidget {
                   title: const Text("Report"),
                   leading: const Icon(Icons.assessment, size: 24),
                   onTap: () {
-                    // Acción específica para Report
                     Navigator.of(context).pushNamed('/report');
                   },
                 ),
               ],
             ),
           ),
-          // Línea divisoria antes de Cerrar sesión
           const Divider(),
-          // Botón Cerrar sesión
           Consumer(
             builder: (context, ref, child) {
               return ListTile(

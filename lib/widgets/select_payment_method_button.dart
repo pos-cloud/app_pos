@@ -11,49 +11,50 @@ class SelectPaymentMethodButton extends ConsumerWidget {
     final totalPrice =
         ref.watch(globalTransactionProvider).transaction?.totalPrice ?? 0.0;
 
-    // Calculamos el 15% de la altura de la pantalla
-    final screenHeight = MediaQuery.of(context).size.height;
-    final buttonHeight = screenHeight * 0.12; // 15% de la altura de la pantalla
-
     return Container(
-      padding:
-          const EdgeInsets.all(8.0), // Un poco de espacio alrededor del botón
-      width: double.infinity, // Ocupa todo el ancho
-      height: buttonHeight, // 15% de la altura de la pantalla
-      child: ElevatedButton(
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => const PaymentMethodScreen(),
-            ),
-          );
-        },
-        style: ElevatedButton.styleFrom(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12), // Bordes redondeados
-          ),
-          elevation: 8, // Sombra para el botón
-          padding: const EdgeInsets.symmetric(
-              horizontal: 16), // Espaciado dentro del botón
-        ),
-        child: Column(
-          mainAxisAlignment:
-              MainAxisAlignment.center, // Centra el contenido verticalmente
-          children: [
-            const Text(
-              "Cobrar", // Texto principal
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      width: double.infinity,
+      child: SizedBox(
+        height: 70,
+        child: ElevatedButton(
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => const PaymentMethodScreen(),
               ),
+            );
+          },
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
             ),
-            const SizedBox(height: 4), // Espacio entre los textos
-            Text(
-              "\$${totalPrice.toStringAsFixed(2)}", // Muestra el total con dos decimales
-              style: const TextStyle(fontSize: 16),
-            ),
-          ],
+            elevation: 4,
+          ),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                "Cobrar",
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                "\$${totalPrice.toStringAsFixed(2)}",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

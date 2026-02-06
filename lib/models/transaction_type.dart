@@ -3,12 +3,16 @@ class TransactionType {
   final String name;
   final String transactionMovement;
   final String? requestCompany; // null, 'Cliente', 'Proveedor'
+  final bool requestPaymentMethods;
+  final bool requestArticles;
 
   TransactionType({
     required this.id,
     required this.name,
     required this.transactionMovement,
     this.requestCompany,
+    this.requestPaymentMethods = false,
+    this.requestArticles = false,
   });
 
   factory TransactionType.fromJson(Map<String, dynamic> json) {
@@ -17,6 +21,8 @@ class TransactionType {
       name: json['name'] ?? '',
       transactionMovement: json['transactionMovement'] ?? '',
       requestCompany: json['requestCompany'],
+      requestPaymentMethods: json['requestPaymentMethods'] ?? false,
+      requestArticles: json['requestArticles'] ?? false,
     );
   }
 
@@ -26,6 +32,8 @@ class TransactionType {
       'name': name,
       'transactionMovement': transactionMovement,
       'requestCompany': requestCompany,
+      'requestPaymentMethods': requestPaymentMethods,
+      'requestArticles': requestArticles,
     };
   }
 }

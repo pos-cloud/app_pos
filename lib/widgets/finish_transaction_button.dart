@@ -8,6 +8,16 @@ class FinishTransactionButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final globalTransaction = ref.watch(globalTransactionProvider);
+
+    // Solo mostrar el botón si hay artículos y métodos de pago
+    final hasArticles = globalTransaction.movementsOfArticles.isNotEmpty;
+    final hasPaymentMethods = globalTransaction.movementsOfCashes.isNotEmpty;
+
+    if (!hasArticles || !hasPaymentMethods) {
+      return const SizedBox.shrink(); // No mostrar el botón
+    }
+
     return FloatingActionButton(
       onPressed: () async {
         try {

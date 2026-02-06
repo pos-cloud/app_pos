@@ -63,8 +63,9 @@ class NavigationDrawerCustom extends StatelessWidget {
                     onTap: () => onItemSelected(movement),
                   );
                 }).toList(),
+                const Divider(),
                 ListTile(
-                  title: const Text("Report"),
+                  title: const Text("Reportes"),
                   leading: const Icon(Icons.assessment, size: 24),
                   onTap: () {
                     Navigator.of(context).pushNamed('/report');
@@ -103,14 +104,14 @@ class NavigationDrawerCustom extends StatelessWidget {
     switch (movement) {
       case TransactionMovement.sale:
         return const Icon(Icons.shopping_cart, size: 24);
-      case TransactionMovement.purchase:
-        return const Icon(Icons.shopping_basket, size: 24);
-      case TransactionMovement.stock:
-        return const Icon(Icons.inventory, size: 24);
-      case TransactionMovement.production:
-        return const Icon(Icons.factory, size: 24);
-      case TransactionMovement.money:
-        return const Icon(Icons.account_balance_wallet, size: 24);
+      // case TransactionMovement.purchase:
+      //   return const Icon(Icons.shopping_basket, size: 24);
+      // case TransactionMovement.stock:
+      //   return const Icon(Icons.inventory, size: 24);
+      // case TransactionMovement.production:
+      //   return const Icon(Icons.factory, size: 24);
+      // case TransactionMovement.money:
+      //   return const Icon(Icons.account_balance_wallet, size: 24);
     }
   }
 }

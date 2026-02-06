@@ -4,6 +4,7 @@ import 'package:app_pos/providers/company_provider.dart';
 import 'package:app_pos/providers/payment_method_provider.dart';
 import 'package:app_pos/screens/company_screen.dart';
 import 'package:app_pos/screens/movement_of_articles_screen.dart';
+import 'package:app_pos/widgets/animated_article_counter.dart';
 import 'package:app_pos/widgets/delete_transaction_dialog.dart';
 import 'package:app_pos/widgets/finish_transaction_button.dart';
 import 'package:app_pos/widgets/select_article.dart';
@@ -111,44 +112,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                     ),
                   ),
                   const SizedBox(width: 20),
-                  Consumer(
-                    builder: (context, ref, _) {
-                      final movementsOfArticles = ref
-                          .watch(globalTransactionProvider)
-                          .movementsOfArticles;
-                      return Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(4),
-                          border: Border.all(color: Colors.black),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.1),
-                              blurRadius: 4,
-                              offset: const Offset(0, 2),
-                            ),
-                          ],
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.receipt_long,
-                                size: 16, color: Colors.black),
-                            const SizedBox(width: 4),
-                            Text(
-                              movementsOfArticles.length.toString(),
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Colors.black,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  ),
+                  const AnimatedArticleCounter(),
                 ],
               )
             : TransactionTypeSelector(

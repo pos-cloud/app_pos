@@ -16,6 +16,7 @@ class CompanyService {
       'name': 1,
       'fantasyName': 1,
       'type': 1,
+      'operationType': 1,
       'identificationType.name': 1,
       'identificationValue': 1,
       'phones': 1,
@@ -73,8 +74,6 @@ class CompanyService {
     );
 
     final responseBody = jsonDecode(response.body);
-
-    print(responseBody);
 
     if (response.statusCode == 200) {
       final items = responseBody['result'][0]['items'];

@@ -17,10 +17,14 @@ class TransactionTypeService {
       'name': 1,
       'transactionMovement': 1,
       'operationType': 1,
-      'requestCompany': 1
+      'requestCompany': 1,
+      'requestPaymentMethods': 1,
+      'requestArticles': 1
     });
     final match = jsonEncode({
-      'operationType': {'\$ne': 'D'}
+      'operationType': {'\$ne': 'D'},
+      'requestPaymentMethods': true,
+      'requestArticles': true
     });
     final sort = jsonEncode({'name': -1});
     final group = jsonEncode({});

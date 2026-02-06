@@ -37,7 +37,7 @@ class MovementOfArticlesScreen extends ConsumerWidget {
                       title: Text(movement.article.description),
                       subtitle: Text('Cantidad: ${movement.amount}'),
                       trailing: IconButton(
-                        icon: const Icon(Icons.delete),
+                        icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () {
                           // Llamar al método para eliminar el movimiento
                           ref

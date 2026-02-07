@@ -11,8 +11,7 @@ class CategoryNotifier extends StateNotifier<List<Category>> {
     try {
       final categories = await _categoryService.getCategories();
       state = categories;
-    } catch (e) {
-      print('Error al cargar categorías: $e');
+    } catch (_) {
       state = [];
     }
   }

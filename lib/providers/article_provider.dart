@@ -22,9 +22,8 @@ class ArticleNotifier extends StateNotifier<List<Article>> {
       state = [];
       final articles = await _articleService.getArticles(searchQuery: query);
       state = articles;
-    } catch (e) {
-      print('Error al cargar searchArticle: $e');
-      state = []; // Manejo de errores: dejamos la lista vacía
+    } catch (_) {
+      state = [];
     }
   }
 }

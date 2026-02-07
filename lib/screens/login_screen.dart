@@ -102,21 +102,22 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     ),
                   ),
                   onPressed: () async {
-                    final authSuccess =
-                        await ref.read(authProvider.notifier).login(
-                              negocioController.text,
-                              usuarioController.text,
-                              passwordController.text,
-                            );
+                    final result = await ref.read(authProvider.notifier).login(
+                          negocioController.text,
+                          usuarioController.text,
+                          passwordController.text,
+                        );
 
-                    if (authSuccess) {
+                    if (result.success) {
                       // Guardar el nombre del negocio para futuros logins
                       await _authService.saveBusiness(negocioController.text);
 
                       Navigator.pushReplacementNamed(context, MainScreen.path);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text("Login failed")),
+                        SnackBar(
+                            content: Text(
+                                result.errorMessage ?? 'Error al iniciar sesión')),
                       );
                     }
                   },

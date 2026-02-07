@@ -22,9 +22,8 @@ class CompanyNotifier extends StateNotifier<List<Company>> {
       state = [];
       final companies = await _companyService.getCompanies(searchQuery: query);
       state = companies;
-    } catch (e) {
-      print('Error al cargar searchCompanies: $e');
-      state = []; // Manejo de errores: dejamos la lista vacía
+    } catch (_) {
+      state = [];
     }
   }
 }

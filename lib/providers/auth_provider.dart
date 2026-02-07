@@ -8,20 +8,22 @@ class AuthNotifier extends StateNotifier<bool> {
 
   AuthNotifier(this._authService) : super(false);
 
-  Future<bool> login(String negocio, String usuario, String password) async {
+  Future<({bool success, String? errorMessage})> login(
+      String negocio, String usuario, String password) async {
     try {
-      final token = await _authService.login(negocio, usuario, password);
-      if (token != null) {
-        await _authService.saveToken(token);
-
+      final result =
+          await _authService.login(negocio, usuario, password);
+      if (result.token != null) {
+        await _authService.saveToken(result.token!);
         state = true;
-        return true;
+        return (success: true, errorMessage: null);
       }
+      state = false;
+      return (success: false, errorMessage: result.errorMessage);
     } catch (e) {
-      print('Error al hacer login: $e');
+      state = false;
+      return (success: false, errorMessage: 'Error de conexión');
     }
-    state = false;
-    return false;
   }
 
   Future<void> logout(WidgetRef ref) async {
@@ -34,9 +36,7 @@ class AuthNotifier extends StateNotifier<bool> {
 
       // Cambiar el estado a no autenticado
       state = false;
-    } catch (e) {
-      print('Error al hacer logout: $e');
-    }
+    } catch (_) {}
   }
 
   void _resetAppState(WidgetRef ref) {

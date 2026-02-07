@@ -1,10 +1,11 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:app_pos/config.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
 class AuthService {
   static const _storage = FlutterSecureStorage();
-  static const String apiUrl = 'https://d-api-v1.poscloud.ar/api/login';
 
   // Guardar el token
   Future<void> saveToken(String token) async {
@@ -36,24 +37,38 @@ class AuthService {
     await _storage.delete(key: 'business_name');
   }
 
-  Future<String?> login(
+  Future<({String? token, String? errorMessage})> login(
       String database, String username, String password) async {
     final response = await http.post(
-      Uri.parse(apiUrl),
+      Uri.parse('${Config.apiUrl}/auth/login')
+          .replace(queryParameters: {'database': database}),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
-        "database": database,
-        "user": username,
+        "email": username,
         "password": password,
+        "platform": Platform.isAndroid ? "android" : "ios",
       }),
     );
 
     if (response.statusCode == 200) {
       final responseBody = jsonDecode(response.body);
-      final token = responseBody['user']['token'];
-      return token;
+      final tokenData = responseBody['result']['token'];
+      String? token;
+      if (tokenData is Map) {
+        token = tokenData['token'] as String?;
+      } else if (tokenData is String) {
+        token = tokenData;
+      }
+      return (token: token, errorMessage: null);
     } else {
-      return null;
+      String? errorMessage;
+      try {
+        final body = jsonDecode(response.body);
+        errorMessage = body['message'] ?? 'Error al iniciar sesión';
+      } catch (_) {
+        errorMessage = 'Error al iniciar sesión';
+      }
+      return (token: null, errorMessage: errorMessage);
     }
   }
 }

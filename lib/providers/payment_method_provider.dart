@@ -11,8 +11,7 @@ class PaymentMethodNotifier extends StateNotifier<List<PaymentMethod>> {
     try {
       final paymentMethod = await _paymentMethodService.getPaymentMethod();
       state = paymentMethod;
-    } catch (e) {
-      print('Error al cargar metodos dep ago: $e');
+    } catch (_) {
       state = [];
     }
   }

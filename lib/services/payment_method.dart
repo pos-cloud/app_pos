@@ -11,7 +11,7 @@ class PaymentMethodService {
   Future<List<PaymentMethod>> getPaymentMethod() async {
     final token = await _authService.getToken();
 
-    final project = jsonEncode({'name': 1, 'operationType': 1});
+    final project = jsonEncode({'_id': 1, 'name': 1, 'operationType': 1});
     final sort = jsonEncode({"name": 1});
     const limit = 100;
 

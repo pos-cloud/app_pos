@@ -8,7 +8,6 @@ class TransactionService {
 
   Future<String> syncTransaction(Map<String, dynamic> transaction) async {
     final url = Uri.parse('${Config.apiUrl}/transactions/create');
-
     final token = await _authService.getToken();
 
     final response = await http.post(
@@ -28,14 +27,18 @@ class TransactionService {
           'Failed to sync transaction. Status code: ${response.statusCode}. Error: $errorMessage');
     }
 
-    final responseData = json.decode(response.body);
+    final responseData = json.decode(response.body) as Map<String, dynamic>;
+    final result = responseData['result'] as Map<String, dynamic>?;
 
-    if (!responseData.containsKey('transactionId')) {
+    final transactionId = responseData['transactionId'] ??
+        result?['transactionId'] ??
+        result?['transaction']?['_id'];
+
+    if (transactionId == null) {
       throw Exception(
           'La respuesta no contiene un transactionId: $responseData');
     }
 
-    // Devolvemos el ID
-    return responseData['transactionId'] as String;
+    return transactionId.toString();
   }
 }

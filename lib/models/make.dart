@@ -13,7 +13,7 @@ class Make {
 
   factory Make.fromJson(Map<String, dynamic> json) {
     return Make(
-      id: json['_id'] ?? '',
+      id: json['_id']?.toString() ?? '',
       description: json['description'] ?? '',
       visibleSale: json['visibleSale'] ?? false,
       picture: json['picture'] ?? '',

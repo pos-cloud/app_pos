@@ -1,4 +1,4 @@
-import 'article.dart'; // Asegúrate de tener este modelo importado
+import 'article.dart';
 
 class PaymentMethod {
   final String? id;
@@ -57,7 +57,7 @@ class PaymentMethod {
 
   factory PaymentMethod.fromJson(Map<String, dynamic> json) {
     return PaymentMethod(
-      id: json['_id'] ?? '',
+      id: json['_id']?.toString() ?? '',
       order: json['order'] ?? 1,
       code: json['code'] ?? 1,
       name: json['name'] ?? '',

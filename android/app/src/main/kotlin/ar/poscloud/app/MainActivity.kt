@@ -1,4 +1,4 @@
-package com.example.app_pos
+package ar.poscloud.app
 
 import io.flutter.embedding.android.FlutterActivity
 

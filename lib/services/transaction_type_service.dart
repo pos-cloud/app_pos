@@ -14,8 +14,10 @@ class TransactionTypeService {
         await _authService.getToken(); // Obtenemos el token desde AuthService
 
     final project = jsonEncode({
+      '_id': 1,
       'name': 1,
       'transactionMovement': 1,
+      'stockMovement': 1,
       'operationType': 1,
       'requestCompany': 1,
       'requestPaymentMethods': 1,

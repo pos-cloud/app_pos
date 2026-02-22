@@ -1,8 +1,10 @@
+/// StockMovement: Entrada, Salida, Inventario, Transferencia
 class TransactionType {
   final String id;
   final String name;
   final String transactionMovement;
-  final String? requestCompany; // null, 'Cliente', 'Proveedor'
+  final String? stockMovement; // 'Entrada', 'Salida', 'Inventario', 'Transferencia'
+  final String? requestCompany;
   final bool requestPaymentMethods;
   final bool requestArticles;
 
@@ -10,6 +12,7 @@ class TransactionType {
     required this.id,
     required this.name,
     required this.transactionMovement,
+    this.stockMovement,
     this.requestCompany,
     this.requestPaymentMethods = false,
     this.requestArticles = false,
@@ -17,10 +20,11 @@ class TransactionType {
 
   factory TransactionType.fromJson(Map<String, dynamic> json) {
     return TransactionType(
-      id: json['_id'] ?? '',
+      id: json['_id']?.toString() ?? '',
       name: json['name'] ?? '',
       transactionMovement: json['transactionMovement'] ?? '',
-      requestCompany: json['requestCompany'],
+      stockMovement: json['stockMovement']?.toString(),
+      requestCompany: json['requestCompany']?.toString(),
       requestPaymentMethods: json['requestPaymentMethods'] ?? false,
       requestArticles: json['requestArticles'] ?? false,
     );
@@ -31,6 +35,7 @@ class TransactionType {
       '_id': id,
       'name': name,
       'transactionMovement': transactionMovement,
+      'stockMovement': stockMovement,
       'requestCompany': requestCompany,
       'requestPaymentMethods': requestPaymentMethods,
       'requestArticles': requestArticles,

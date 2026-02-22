@@ -1,13 +1,14 @@
+import 'package:app_pos/mappers/transaction_create_mapper.dart';
 import 'package:app_pos/models/article.dart';
 import 'package:app_pos/models/company.dart';
+import 'package:app_pos/models/global_transaction.dart';
 import 'package:app_pos/models/movement_of_article.dart';
 import 'package:app_pos/models/movement_of_cash.dart';
 import 'package:app_pos/models/payment_method.dart';
 import 'package:app_pos/models/transaction.dart';
 import 'package:app_pos/models/transaction_type.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/services/transaction_service.dart';
-import 'package:app_pos/models/global_transaction.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
   final TransactionService transactionService;
@@ -27,6 +28,8 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
       salePrice: article.salePrice,
       amount: 1,
       article: article,
+      make: article.make,
+      category: article.category,
     );
 
     final updatedMovements = [...state.movementsOfArticles, movement];
@@ -61,19 +64,15 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     state = state.copyWith(movementsOfCashes: updatedMovements);
   }
 
-  void sendMail(String id, String email) {}
-
   void resetTransaction() {
     state = state.reset();
   }
 
   Future<String> syncTransaction() async {
     try {
-      final transactionId = await transactionService.syncTransaction({
-        'transaction': state.transaction,
-        'movementsOfArticles': state.movementsOfArticles,
-        'movementsOfCashes': state.movementsOfCashes,
-      });
+      final payload = TransactionCreateMapper.toCreatePayload(state);
+      final transactionId =
+          await transactionService.syncTransaction(payload);
 
       state = state.reset();
 

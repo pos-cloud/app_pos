@@ -1,30 +1,51 @@
+import 'package:app_pos/providers/global_transaction_provider.dart';
 import 'package:app_pos/providers/payment_method_provider.dart';
 import 'package:app_pos/screens/movement_cash_screen.dart';
 import 'package:app_pos/widgets/finish_transaction_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:app_pos/providers/global_transaction_provider.dart';
 
-class PaymentMethodScreen extends ConsumerWidget {
+class PaymentMethodScreen extends ConsumerStatefulWidget {
   const PaymentMethodScreen({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final totalPrice =
-        ref.watch(globalTransactionProvider).transaction?.totalPrice ?? 0;
+  ConsumerState<PaymentMethodScreen> createState() =>
+      _PaymentMethodScreenState();
+}
 
-    final paymentMethods = ref.watch(paymentMethodProvider);
+class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
+  final TextEditingController _amountController = TextEditingController();
+
+  @override
+  void dispose() {
+    _amountController.dispose();
+    super.dispose();
+  }
+
+  void _updateAmountToRemaining(double remaining) {
+    _amountController.text = remaining.toStringAsFixed(2);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final totalPrice =
+        ref.watch(globalTransactionProvider).transaction?.totalPrice ?? 0.0;
     final movementsOfCashes =
         ref.watch(globalTransactionProvider).movementsOfCashes;
+    final paymentMethods = ref.watch(paymentMethodProvider);
 
-    double totalPaid = movementsOfCashes.fold(0, (sum, movement) {
-      return sum +
-          (movement.amountPaid ?? 0); // Si amountPaid es nulo, suma 0.0
-    });
-
-    final TextEditingController controller = TextEditingController(
-      text: totalPrice.toStringAsFixed(0),
+    final totalPaid = movementsOfCashes.fold<double>(
+      0,
+      (sum, m) => sum + (m.amountPaid ?? 0),
     );
+    final remaining = (totalPrice - totalPaid).clamp(0.0, double.infinity);
+    final canAddMore = remaining > 0;
+
+    if (canAddMore) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _updateAmountToRemaining(remaining);
+      });
+    }
 
     return Scaffold(
       appBar: AppBar(
@@ -41,13 +62,10 @@ class PaymentMethodScreen extends ConsumerWidget {
               },
               child: const Text(
                 "Métodos de Pago",
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
-            const SizedBox(width: 8), // Espacio entre el texto y el ícono
+            const SizedBox(width: 8),
             GestureDetector(
               onTap: () {
                 Navigator.push(
@@ -67,19 +85,18 @@ class PaymentMethodScreen extends ConsumerWidget {
                 child: Text(
                   movementsOfCashes.length.toString(),
                   style: const TextStyle(
-                      fontSize: 14,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black),
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black,
+                  ),
                 ),
               ),
-            )
+            ),
           ],
         ),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context);
-          },
+          onPressed: () => Navigator.pop(context),
         ),
       ),
       body: Padding(
@@ -90,12 +107,10 @@ class PaymentMethodScreen extends ConsumerWidget {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                // Total a Pagar
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      "\$${totalPrice.toStringAsFixed(0)}",
+                      "\$${totalPrice.toStringAsFixed(2)}",
                       style: const TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.bold,
@@ -104,20 +119,15 @@ class PaymentMethodScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                     const Text(
                       "Total a Pagar",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
                 const SizedBox(width: 30),
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
                     Text(
-                      "\$${totalPaid.toStringAsFixed(0)}",
+                      "\$${totalPaid.toStringAsFixed(2)}",
                       style: const TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.bold,
@@ -126,21 +136,15 @@ class PaymentMethodScreen extends ConsumerWidget {
                     const SizedBox(height: 8),
                     const Text(
                       "Total Pagado",
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.normal,
-                        color: Colors.grey,
-                      ),
+                      style: TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
               ],
             ),
-
             const SizedBox(height: 40),
-
             TextFormField(
-              controller: controller,
+              controller: _amountController,
               decoration: const InputDecoration(
                 prefixText: "\$",
                 labelText: "Monto Recibido",
@@ -150,26 +154,48 @@ class PaymentMethodScreen extends ConsumerWidget {
                   const TextInputType.numberWithOptions(decimal: true),
             ),
             const SizedBox(height: 20),
-
-            // Lista de botones de métodos de pago
             Expanded(
               child: ListView.builder(
                 itemCount: paymentMethods.length,
                 itemBuilder: (context, index) {
                   final method = paymentMethods[index];
-                  return ElevatedButton(
-                    onPressed: () async {
-                      final amount = double.tryParse(controller.text) ?? 0.0;
-
-                      ref
-                          .read(globalTransactionProvider.notifier)
-                          .addMovementOfCash(method, amount);
-                    },
-                    child: Text(method.name),
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: ElevatedButton(
+                      onPressed: canAddMore
+                          ? () {
+                              final amount =
+                                  double.tryParse(_amountController.text) ?? 0;
+                              if (amount <= 0) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                    content: Text('Ingresá un monto válido'),
+                                  ),
+                                );
+                                return;
+                              }
+                              if (amount > remaining + 0.01) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'El monto no puede superar \$${remaining.toStringAsFixed(2)}',
+                                    ),
+                                  ),
+                                );
+                                return;
+                              }
+                              ref
+                                  .read(globalTransactionProvider.notifier)
+                                  .addMovementOfCash(method, amount);
+                              _amountController.clear();
+                            }
+                          : null,
+                      child: Text(method.name),
+                    ),
                   );
                 },
               ),
-            )
+            ),
           ],
         ),
       ),

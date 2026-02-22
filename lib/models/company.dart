@@ -19,7 +19,7 @@ class Company {
 
   factory Company.fromJson(Map<String, dynamic> json) {
     return Company(
-      id: json['_id'],
+      id: json['_id']?.toString(),
       name: json['name'] ?? '',
       fantasyName: json['fantasyName'],
       type: json['type'] ?? 'Cliente',

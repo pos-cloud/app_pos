@@ -1,16 +1,61 @@
 import 'package:app_pos/providers/global_transaction_provider.dart';
+import 'package:app_pos/services/email_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-class FinalTransactionScreen extends ConsumerWidget {
+class FinalTransactionScreen extends ConsumerStatefulWidget {
   final String transactionId;
 
   const FinalTransactionScreen({Key? key, required this.transactionId})
       : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final TextEditingController emailController = TextEditingController();
+  ConsumerState<FinalTransactionScreen> createState() =>
+      _FinalTransactionScreenState();
+}
+
+class _FinalTransactionScreenState extends ConsumerState<FinalTransactionScreen> {
+  final _emailService = EmailService();
+  final _emailController = TextEditingController();
+  bool _isSending = false;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
+  Future<void> _sendEmail() async {
+    final email = _emailController.text.trim();
+    if (email.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Por favor ingresa un correo')),
+      );
+      return;
+    }
+
+    setState(() => _isSending = true);
+    try {
+      await _emailService.sendTransactionEmail(
+        transactionId: widget.transactionId,
+        to: email,
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Correo enviado exitosamente')),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSending = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
 
     return PopScope(
       child: Scaffold(
@@ -34,40 +79,21 @@ class FinalTransactionScreen extends ConsumerWidget {
                 children: [
                   Expanded(
                     child: TextField(
-                      controller: emailController,
+                      controller: _emailController,
+                      enabled: !_isSending,
                       decoration: InputDecoration(
                         hintText: "Ingrese correo",
                         hintStyle: const TextStyle(color: Colors.grey),
                         prefixIcon: const Icon(Icons.email),
                         suffixIcon: IconButton(
-                          icon: const Icon(Icons.send),
-                          onPressed: () async {
-                            final email = emailController.text.trim();
-                            if (email.isNotEmpty) {
-                              try {
-                                ref
-                                    .read(globalTransactionProvider.notifier)
-                                    .sendMail(transactionId, email);
-
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content:
-                                          Text("Correo enviado exitosamente")),
-                                );
-                              } catch (e) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(
-                                      content: Text("Error: ${e.toString()}")),
-                                );
-                              }
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text("Por favor ingresa un correo")),
-                              );
-                            }
-                          },
+                          icon: _isSending
+                              ? const SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: CircularProgressIndicator(strokeWidth: 2),
+                                )
+                              : const Icon(Icons.send),
+                          onPressed: _isSending ? null : _sendEmail,
                         ),
                         border: const UnderlineInputBorder(),
                       ),
@@ -87,9 +113,7 @@ class FinalTransactionScreen extends ConsumerWidget {
                     ),
                   ),
                   onPressed: () {
-                    ref
-                        .read(globalTransactionProvider.notifier)
-                        .resetTransaction();
+                    ref.read(globalTransactionProvider.notifier).resetTransaction();
                     Navigator.pushReplacementNamed(context, '/main_screen');
                   },
                   icon: const Icon(Icons.check),

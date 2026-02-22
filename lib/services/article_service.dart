@@ -12,13 +12,16 @@ class ArticleService {
     final token = await _authService.getToken();
 
     final project = jsonEncode({
+      '_id': 1,
       'code': 1,
       'description': 1,
       'posDescription': 1,
       'salePrice': 1,
       'picture': 1,
       'operationType': 1,
-      'type': 1
+      'type': 1,
+      'make': 1,
+      'category': 1,
     });
     final sort = jsonEncode({"name": 1});
     const limit = 100;

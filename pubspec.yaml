@@ -37,6 +37,7 @@ dependencies:
   flutter_riverpod: ^2.6.1
   flutter_secure_storage: ^9.2.2
   http: ^1.2.2
+  shared_preferences: ^2.5.3
 
 dev_dependencies:
   flutter_test:
@@ -93,11 +94,15 @@ flutter:
   # see https://flutter.dev/custom-fonts/#from-packages
 
 # Configuración para el ícono de la app
+# Nota: El logo debe ser cuadrado (1024x1024) para evitar estiramiento.
+# Si es rectangular, crea una versión cuadrada con el logo centrado.
 flutter_launcher_icons:
   android: true
   ios: true
   image_path: "assets/logo.png"
   remove_alpha_ios: true
+  # Fondo para iconos adaptativos en Android - evita distorsión
+  adaptive_icon_background: "#FFFFFF"
 
 # Configuración para la splash screen
 flutter_native_splash:

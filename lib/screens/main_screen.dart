@@ -3,6 +3,7 @@ import 'package:app_pos/providers/category_provider.dart';
 import 'package:app_pos/providers/company_provider.dart';
 import 'package:app_pos/providers/payment_method_provider.dart';
 import 'package:app_pos/screens/company_screen.dart';
+import 'package:app_pos/screens/finish_transaction_screen.dart';
 import 'package:app_pos/screens/movement_of_articles_screen.dart';
 import 'package:app_pos/widgets/animated_article_counter.dart';
 import 'package:app_pos/widgets/delete_transaction_dialog.dart';
@@ -183,16 +184,103 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ),
       body: !isTransactionActive
           ? const TransactionTypeSelectionWidget()
-          : const Column(
-              children: [
-                SelectPaymentMethodButton(),
-                Expanded(
-                  child: SelectArticleWidget(),
-                ),
-              ],
-            ),
-      floatingActionButton:
-          isTransactionActive ? const FinishTransactionButton() : null,
+          : _TransactionBody(transactionType: currentTransaction.type),
+      floatingActionButton: isTransactionActive &&
+              currentTransaction.type.requestPaymentMethods
+          ? const FinishTransactionButton()
+          : null,
     );
+  }
+}
+
+/// Cuerpo de la transacción que muestra condicionalmente según el tipo.
+class _TransactionBody extends ConsumerWidget {
+  final TransactionType transactionType;
+
+  const _TransactionBody({required this.transactionType});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final showArticles = transactionType.requestArticles;
+    final showCobrar = transactionType.requestPaymentMethods;
+
+    return Column(
+      children: [
+        if (showCobrar)
+          const SelectPaymentMethodButton()
+        else
+          _FinalizeButton(transactionType: transactionType),
+        Expanded(
+          child: showArticles
+              ? const SelectArticleWidget()
+              : const SizedBox.shrink(),
+        ),
+      ],
+    );
+  }
+}
+
+/// Botón "Finalizar" para transacciones que no requieren métodos de pago.
+class _FinalizeButton extends ConsumerWidget {
+  final TransactionType transactionType;
+
+  const _FinalizeButton({required this.transactionType});
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final globalTransaction = ref.watch(globalTransactionProvider);
+    final hasArticles = globalTransaction.movementsOfArticles.isNotEmpty;
+    final canFinalize =
+        !transactionType.requestArticles || hasArticles;
+
+    if (!canFinalize) return const SizedBox.shrink();
+
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      width: double.infinity,
+      child: SizedBox(
+        height: 70,
+        child: ElevatedButton(
+          onPressed: () => _finalizeTransaction(context, ref),
+          style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.green,
+            foregroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+            elevation: 4,
+          ),
+          child: const Text(
+            "Finalizar",
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Future<void> _finalizeTransaction(BuildContext context, WidgetRef ref) async {
+    try {
+      final notifier = ref.read(globalTransactionProvider.notifier);
+      final transactionId = await notifier.syncTransaction();
+
+      if (!context.mounted) return;
+      Navigator.pushAndRemoveUntil(
+        context,
+        MaterialPageRoute(
+          builder: (_) => FinalTransactionScreen(transactionId: transactionId),
+        ),
+        (route) => false,
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al finalizar: $e')),
+      );
+    }
   }
 }

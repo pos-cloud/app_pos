@@ -29,13 +29,40 @@ class MovementOfArticlesScreen extends ConsumerWidget {
                 itemBuilder: (context, index) {
                   final movement = movements[index];
 
+                  final unitPrice =
+                      movement.unitPrice ?? movement.salePrice ?? 0.0;
+                  final amount = movement.amount ?? 1.0;
+                  final total = unitPrice * amount;
+
                   return Card(
                     margin: const EdgeInsets.symmetric(vertical: 8),
                     child: ListTile(
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: 16, vertical: 8),
                       title: Text(movement.article.description),
-                      subtitle: Text('Cantidad: ${movement.amount}'),
+                      subtitle: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            'Cantidad: ${amount == amount.roundToDouble() ? amount.toInt() : amount.toStringAsFixed(2)}',
+                          ),
+                          Text(
+                            'Precio unitario: \$${unitPrice.toStringAsFixed(2)}',
+                            style: TextStyle(
+                              color: Colors.grey.shade600,
+                              fontSize: 13,
+                            ),
+                          ),
+                          Text(
+                            'Total: \$${total.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 14,
+                            ),
+                          ),
+                        ],
+                      ),
                       trailing: IconButton(
                         icon: const Icon(Icons.delete, color: Colors.red),
                         onPressed: () {

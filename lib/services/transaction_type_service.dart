@@ -25,8 +25,6 @@ class TransactionTypeService {
     });
     final match = jsonEncode({
       'operationType': {'\$ne': 'D'},
-      'requestPaymentMethods': true,
-      'requestArticles': true
     });
     final sort = jsonEncode({'name': -1});
     final group = jsonEncode({});

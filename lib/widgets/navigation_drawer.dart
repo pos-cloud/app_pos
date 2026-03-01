@@ -1,4 +1,5 @@
 import 'package:app_pos/providers/auth_provider.dart';
+import 'package:app_pos/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/models/transaction_movement.dart';
@@ -73,6 +74,15 @@ class NavigationDrawerCustom extends StatelessWidget {
                 ),
               ],
             ),
+          ),
+          const Divider(),
+          ListTile(
+            title: const Text("Configuración"),
+            leading: const Icon(Icons.settings, size: 24),
+            onTap: () {
+              Navigator.of(context).pop();
+              Navigator.of(context).pushNamed(SettingsScreen.path);
+            },
           ),
           const Divider(),
           Consumer(

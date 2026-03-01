@@ -52,7 +52,7 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
                       });
                     },
                     decoration: InputDecoration(
-                      hintText: 'Buscar artículo...',
+                      hintText: 'Buscar productos...',
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),

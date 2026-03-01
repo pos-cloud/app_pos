@@ -33,22 +33,28 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   TransactionMovement? selectedMovement;
   TransactionType? selectedTransactionType;
+  bool _isLoading = true;
+
+  Future<void> _loadInitialData() async {
+    await Future.wait([
+      ref.read(transactionTypeProvider.notifier).loadTransactionTypes(),
+      ref.read(articlesProvider.notifier).loadArticles(),
+      ref.read(categoryProvider.notifier).loadCategories(),
+      ref.read(paymentMethodProvider.notifier).loadMethodPayment(),
+      ref.read(companyProvider.notifier).loadCompanies(),
+    ]);
+    if (mounted) setState(() => _isLoading = false);
+  }
 
   @override
   void initState() {
     super.initState();
 
-    Future.microtask(() {
-      ref.read(transactionTypeProvider.notifier).loadTransactionTypes();
-      ref.read(articlesProvider.notifier).loadArticles();
-      ref.read(categoryProvider.notifier).loadCategories();
-      ref.read(paymentMethodProvider.notifier).loadMethodPayment();
-      ref.read(companyProvider.notifier).loadCompanies();
-    });
-
-    // Abrir el drawer automáticamente tras la construcción inicial.
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scaffoldKey.currentState?.openDrawer();
+    Future.microtask(() async {
+      await _loadInitialData();
+      if (mounted) {
+        _scaffoldKey.currentState?.openDrawer();
+      }
     });
   }
 
@@ -63,11 +69,32 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         .toList();
   }
 
-  void _refresh() {
-    ref.read(articlesProvider.notifier).loadArticles();
-    ref.read(categoryProvider.notifier).loadCategories();
-    ref.read(paymentMethodProvider.notifier).loadMethodPayment();
-    ref.read(companyProvider.notifier).loadCompanies();
+  Future<void> _refresh() async {
+    setState(() => _isLoading = true);
+    await _loadInitialData();
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Datos actualizados')),
+      );
+    }
+  }
+
+  Widget _buildLoadingOverlay() {
+    return Positioned.fill(
+      child: Container(
+        color: Theme.of(context).scaffoldBackgroundColor.withOpacity(0.8),
+        child: const Center(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircularProgressIndicator(),
+              SizedBox(height: 16),
+              Text('Cargando datos...'),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -144,9 +171,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               },
             ),
           PopupMenuButton<String>(
-            onSelected: (value) {
+            onSelected: (value) async {
               if (value == 'Actualizar') {
-                _refresh();
+                await _refresh();
               } else {
                 showDialog(
                   context: context,
@@ -182,9 +209,15 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ),
         ],
       ),
-      body: !isTransactionActive
-          ? const TransactionTypeSelectionWidget()
-          : _TransactionBody(transactionType: currentTransaction.type),
+      body: Stack(
+        children: [
+          if (!isTransactionActive)
+            const TransactionTypeSelectionWidget()
+          else
+            _TransactionBody(transactionType: currentTransaction.type),
+          if (_isLoading) _buildLoadingOverlay(),
+        ],
+      ),
       floatingActionButton: isTransactionActive &&
               currentTransaction.type.requestPaymentMethods
           ? const FinishTransactionButton()

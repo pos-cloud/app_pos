@@ -7,8 +7,8 @@ import 'package:app_pos/config.dart';
 class CompanyService {
   final AuthService _authService = AuthService();
 
-  // Método para obtener las compañías (clientes)
-  Future<List<Company>> getCompanies({String? searchQuery}) async {
+  // Carga todos los clientes una sola vez (búsqueda se hace en memoria)
+  Future<List<Company>> getCompanies() async {
     final token = await _authService.getToken();
 
     final project = jsonEncode({
@@ -28,24 +28,12 @@ class CompanyService {
       'creditLimit': 1,
     });
     final sort = jsonEncode({"name": 1});
-    const limit = 100;
+    const limit = 1000000;
 
-    // Construimos el filtro `match` - solo clientes activos
-    final Map<String, dynamic> match = {
+    final match = jsonEncode({
       "operationType": {"\$ne": "D"},
       "type": "Cliente"
-    };
-
-    // Si hay una búsqueda, la agregamos al filtro
-    if (searchQuery != null && searchQuery.isNotEmpty) {
-      match["name"] = {
-        "\$regex": searchQuery,
-        "\$options": "i" // Insensible a mayúsculas y minúsculas
-      };
-    }
-
-    // Convertimos el filtro a JSON
-    final matchJson = jsonEncode(match);
+    });
 
     final group = {
       '_id': null,
@@ -58,7 +46,7 @@ class CompanyService {
     final url = Uri.parse('${Config.apiUrl}/companies').replace(
       queryParameters: {
         'project': project,
-        'match': matchJson,
+        'match': match,
         'sort': sort,
         'group': groupJson,
         'limit': limit.toString(),

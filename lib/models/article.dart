@@ -4,6 +4,7 @@ import 'package:app_pos/models/make.dart';
 class Article {
   final String? id;
   final String? code;
+  final String? barcode;
   final double salePrice;
   final String description;
   final String posDescription;
@@ -14,6 +15,7 @@ class Article {
   Article({
     this.id,
     this.code,
+    this.barcode,
     required this.salePrice,
     required this.description,
     required this.posDescription,
@@ -48,6 +50,7 @@ class Article {
     return Article(
       id: json['_id']?.toString(),
       code: json['code']?.toString(),
+      barcode: json['barcode']?.toString(),
       salePrice: json['salePrice']?.toDouble() ?? 0.0,
       description: json['description'] ?? '',
       posDescription: json['posDescription'] ?? '',

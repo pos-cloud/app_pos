@@ -7,13 +7,14 @@ import 'package:app_pos/config.dart';
 class ArticleService {
   final AuthService _authService = AuthService();
 
-  // Método para obtener los artículos
-  Future<List<Article>> getArticles({String? searchQuery}) async {
+  // Carga todos los artículos una sola vez (búsqueda se hace en memoria)
+  Future<List<Article>> getArticles() async {
     final token = await _authService.getToken();
 
     final project = jsonEncode({
       '_id': 1,
       'code': 1,
+      'barcode': 1,
       'description': 1,
       'posDescription': 1,
       'salePrice': 1,
@@ -24,24 +25,12 @@ class ArticleService {
       'category': 1,
     });
     final sort = jsonEncode({"name": 1});
-    const limit = 100;
+    const limit = 1000000;
 
-    // Construimos el filtro `match`
-    final Map<String, dynamic> match = {
+    final match = jsonEncode({
       "operationType": {"\$ne": "D"},
       "type": {"\$eq": "Final"}
-    };
-
-    // Si hay una búsqueda, la agregamos al filtro
-    if (searchQuery != null && searchQuery.isNotEmpty) {
-      match["description"] = {
-        "\$regex": searchQuery,
-        "\$options": "i" // Insensible a mayúsculas y minúsculas
-      };
-    }
-
-    // Convertimos el filtro a JSON
-    final matchJson = jsonEncode(match);
+    });
 
     final group = {
       '_id': null,
@@ -54,7 +43,7 @@ class ArticleService {
     final url = Uri.parse('${Config.apiUrl}/articles').replace(
       queryParameters: {
         'project': project,
-        'match': matchJson,
+        'match': match,
         'sort': sort,
         'group': groupJson,
         'limit': limit.toString(),

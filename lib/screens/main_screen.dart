@@ -2,7 +2,9 @@ import 'package:app_pos/providers/article_provider.dart';
 import 'package:app_pos/providers/category_provider.dart';
 import 'package:app_pos/providers/company_provider.dart';
 import 'package:app_pos/providers/payment_method_provider.dart';
+import 'package:app_pos/providers/price_list_provider.dart';
 import 'package:app_pos/screens/company_screen.dart';
+import 'package:app_pos/screens/price_list_screen.dart';
 import 'package:app_pos/screens/finish_transaction_screen.dart';
 import 'package:app_pos/screens/movement_of_articles_screen.dart';
 import 'package:app_pos/widgets/animated_article_counter.dart';
@@ -42,6 +44,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ref.read(categoryProvider.notifier).loadCategories(),
       ref.read(paymentMethodProvider.notifier).loadMethodPayment(),
       ref.read(companyProvider.notifier).loadCompanies(),
+      ref.read(priceListProvider.notifier).loadPriceLists(),
     ]);
     if (mounted) setState(() => _isLoading = false);
   }
@@ -160,12 +163,39 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 currentTransaction.company == null
                     ? Icons.person_add
                     : Icons.person,
+                color: currentTransaction.company != null
+                    ? Colors.amber
+                    : null,
               ),
+              tooltip: currentTransaction.company != null
+                  ? 'Cliente: ${currentTransaction.company!.name}'
+                  : 'Seleccionar cliente',
               onPressed: () {
                 Navigator.push(
                   context,
                   MaterialPageRoute(
                     builder: (context) => const CompanyScreen(),
+                  ),
+                );
+              },
+            ),
+          if (isTransactionActive &&
+              currentTransaction.type.allowPriceList == true)
+            IconButton(
+              icon: Icon(
+                Icons.list_alt,
+                color: currentTransaction.priceList != null
+                    ? Colors.amber
+                    : null,
+              ),
+              tooltip: currentTransaction.priceList != null
+                  ? 'Lista: ${currentTransaction.priceList!.name}'
+                  : 'Lista de precios',
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const PriceListScreen(),
                   ),
                 );
               },
@@ -182,25 +212,26 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               }
             },
             itemBuilder: (BuildContext context) {
+              final iconColor = Theme.of(context).colorScheme.onSurface;
               return [
-                const PopupMenuItem<String>(
+                PopupMenuItem<String>(
                   value: 'Actualizar',
                   child: Row(
                     children: [
-                      Icon(Icons.refresh),
-                      SizedBox(width: 10),
-                      Text('Actualizar'),
+                      Icon(Icons.refresh, color: iconColor),
+                      const SizedBox(width: 10),
+                      const Text('Actualizar'),
                     ],
                   ),
                 ),
                 if (isTransactionActive)
-                  const PopupMenuItem<String>(
+                  PopupMenuItem<String>(
                     value: 'Eliminar',
                     child: Row(
                       children: [
-                        Icon(Icons.delete),
-                        SizedBox(width: 10),
-                        Text('Eliminar'),
+                        Icon(Icons.delete, color: Colors.red.shade700),
+                        const SizedBox(width: 10),
+                        Text('Eliminar', style: TextStyle(color: Colors.red.shade700)),
                       ],
                     ),
                   ),

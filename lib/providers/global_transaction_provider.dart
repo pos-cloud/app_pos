@@ -5,6 +5,7 @@ import 'package:app_pos/models/global_transaction.dart';
 import 'package:app_pos/models/movement_of_article.dart';
 import 'package:app_pos/models/movement_of_cash.dart';
 import 'package:app_pos/models/payment_method.dart';
+import 'package:app_pos/models/price_list.dart';
 import 'package:app_pos/models/transaction.dart';
 import 'package:app_pos/models/transaction_type.dart';
 import 'package:app_pos/services/transaction_service.dart';
@@ -101,6 +102,19 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
 
     state = state.copyWith(
       transaction: state.transaction!.copyWith(company: company),
+    );
+  }
+
+  void updatePriceList(PriceList? priceList) {
+    if (state.transaction == null) {
+      throw Exception('No active transaction');
+    }
+
+    state = state.copyWith(
+      transaction: state.transaction!.copyWith(
+        priceList: priceList,
+        clearPriceList: priceList == null,
+      ),
     );
   }
 }

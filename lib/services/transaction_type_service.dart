@@ -21,7 +21,8 @@ class TransactionTypeService {
       'operationType': 1,
       'requestCompany': 1,
       'requestPaymentMethods': 1,
-      'requestArticles': 1
+      'requestArticles': 1,
+      'allowPriceList': 1
     });
     final match = jsonEncode({
       'operationType': {'\$ne': 'D'},

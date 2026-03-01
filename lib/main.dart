@@ -1,6 +1,8 @@
 import 'package:app_pos/providers/theme_mode_provider.dart';
+import 'package:app_pos/screens/company_screen.dart';
 import 'package:app_pos/screens/login_screen.dart';
 import 'package:app_pos/screens/main_screen.dart';
+import 'package:app_pos/screens/price_list_screen.dart';
 import 'package:app_pos/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -27,7 +29,9 @@ class MyApp extends ConsumerWidget {
       routes: {
         LoginScreen.path: (context) => const LoginScreen(),
         MainScreen.path: (context) => const MainScreen(),
+        CompanyScreen.path: (context) => const CompanyScreen(),
         SettingsScreen.path: (context) => const SettingsScreen(),
+        PriceListScreen.path: (context) => const PriceListScreen(),
       },
     );
   }

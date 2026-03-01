@@ -7,6 +7,7 @@ class TransactionType {
   final String? requestCompany;
   final bool requestPaymentMethods;
   final bool requestArticles;
+  final bool? allowPriceList;
 
   TransactionType({
     required this.id,
@@ -16,6 +17,7 @@ class TransactionType {
     this.requestCompany,
     this.requestPaymentMethods = false,
     this.requestArticles = false,
+    this.allowPriceList,
   });
 
   factory TransactionType.fromJson(Map<String, dynamic> json) {
@@ -27,6 +29,7 @@ class TransactionType {
       requestCompany: json['requestCompany']?.toString(),
       requestPaymentMethods: json['requestPaymentMethods'] ?? false,
       requestArticles: json['requestArticles'] ?? false,
+      allowPriceList: json['allowPriceList'] is bool ? json['allowPriceList'] as bool : null,
     );
   }
 
@@ -39,6 +42,7 @@ class TransactionType {
       'requestCompany': requestCompany,
       'requestPaymentMethods': requestPaymentMethods,
       'requestArticles': requestArticles,
+      'allowPriceList': allowPriceList ?? false,
     };
   }
 }

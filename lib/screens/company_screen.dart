@@ -30,6 +30,8 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
   @override
   Widget build(BuildContext context) {
     final companies = ref.watch(companyProvider);
+    final transactionCompany =
+        ref.watch(globalTransactionProvider).transaction?.company;
 
     return Scaffold(
       appBar: AppBar(
@@ -40,6 +42,59 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Cliente seleccionado (persistido en la transacción)
+            if (transactionCompany != null) ...[
+              Container(
+                margin: const EdgeInsets.only(bottom: 12),
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Colors.amber.shade50,
+                  borderRadius: BorderRadius.circular(8),
+                  border: Border.all(color: Colors.amber.shade200),
+                ),
+                child: Row(
+                  children: [
+                    CircleAvatar(
+                      backgroundColor: Colors.amber.shade100,
+                      child: Icon(Icons.person, color: Colors.amber.shade800),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            'Cliente seleccionado',
+                            style: TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey.shade600,
+                            ),
+                          ),
+                          Text(
+                            transactionCompany.name,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                          if (transactionCompany.identificationType?.name !=
+                                  null &&
+                              transactionCompany.identificationValue != null)
+                            Text(
+                              '${transactionCompany.identificationType!.name}: ${transactionCompany.identificationValue}',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: Colors.grey.shade600,
+                              ),
+                            ),
+                        ],
+                      ),
+                    ),
+                    Icon(Icons.check_circle, color: Colors.green.shade700),
+                  ],
+                ),
+              ),
+            ],
             // Campo de búsqueda
             Padding(
               padding: const EdgeInsets.only(bottom: 10),
@@ -69,6 +124,8 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                       itemCount: companies.length,
                       itemBuilder: (context, index) {
                         final company = companies[index];
+                        final isSelected =
+                            transactionCompany?.id == company.id;
                         return Container(
                           margin: const EdgeInsets.only(bottom: 4),
                           decoration: BoxDecoration(
@@ -102,6 +159,10 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                                         style: const TextStyle(fontSize: 12),
                                       )
                                     : null,
+                            trailing: isSelected
+                                ? const Icon(Icons.check_circle,
+                                    color: Colors.green, size: 28)
+                                : null,
                             onTap: () {
                               // Actualizar la company en la transacción
                               ref

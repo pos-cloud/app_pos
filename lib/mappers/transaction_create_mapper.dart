@@ -58,6 +58,10 @@ class TransactionCreateMapper {
       map['company'] = t.company!.id;
     }
 
+    if (t.priceList != null && _hasId(t.priceList!.id)) {
+      map['priceList'] = t.priceList!.id;
+    }
+
     return map;
   }
 

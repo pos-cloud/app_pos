@@ -26,8 +26,11 @@ class FinishTransactionButton extends ConsumerWidget {
 
     final isCovered = totalPaid >= totalPrice - 0.01;
 
+    // Solo método de pago (sin artículos): basta con tener al menos un pago
     final canFinalize = requestPaymentMethods
-        ? hasArticles && hasPaymentMethods && isCovered
+        ? (requestArticles
+            ? hasArticles && hasPaymentMethods && isCovered
+            : hasPaymentMethods && (totalPrice <= 0 || isCovered))
         : (!requestArticles || hasArticles);
 
     if (!canFinalize) {

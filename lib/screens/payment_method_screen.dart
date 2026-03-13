@@ -28,10 +28,11 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final totalPrice =
-        ref.watch(globalTransactionProvider).transaction?.totalPrice ?? 0.0;
-    final movementsOfCashes =
-        ref.watch(globalTransactionProvider).movementsOfCashes;
+    final globalTransaction = ref.watch(globalTransactionProvider);
+    final transaction = globalTransaction.transaction;
+    final totalPrice = transaction?.totalPrice ?? 0.0;
+    final requestArticles = transaction?.type.requestArticles ?? true;
+    final movementsOfCashes = globalTransaction.movementsOfCashes;
     final paymentMethods = ref.watch(paymentMethodProvider);
 
     final totalPaid = movementsOfCashes.fold<double>(
@@ -39,9 +40,11 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
       (sum, m) => sum + (m.amountPaid ?? 0),
     );
     final remaining = (totalPrice - totalPaid).clamp(0.0, double.infinity);
-    final canAddMore = remaining > 0;
+    // Cuando solo pide método de pago (sin artículos), siempre permite agregar pagos
+    final canAddMore =
+        !requestArticles || remaining > 0;
 
-    if (canAddMore) {
+    if (canAddMore && requestArticles) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _updateAmountToRemaining(remaining);
       });
@@ -174,7 +177,8 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                                 );
                                 return;
                               }
-                              if (amount > remaining + 0.01) {
+                              if (requestArticles &&
+                                  amount > remaining + 0.01) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(

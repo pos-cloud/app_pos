@@ -44,7 +44,7 @@ class AuthService {
           .replace(queryParameters: {'database': database}),
       headers: {"Content-Type": "application/json"},
       body: jsonEncode({
-        "email": username,
+        "name": username,
         "password": password,
         "platform": Platform.isAndroid ? "android" : "ios",
       }),

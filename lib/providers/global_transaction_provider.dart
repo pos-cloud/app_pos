@@ -56,13 +56,38 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
 
     final updateMovements = [...state.movementsOfCashes, movement];
 
-    state = state.copyWith(movementsOfCashes: updateMovements);
+    // Cuando el tipo solo pide método de pago (sin artículos), actualizar totalPrice
+    final t = state.transaction;
+    final updatedTotalPrice = (t?.type.requestArticles ?? true)
+        ? (t?.totalPrice ?? 0.0)
+        : (t?.totalPrice ?? 0.0) + amount;
+
+    state = state.copyWith(
+      movementsOfCashes: updateMovements,
+      transaction: (t != null && !t.type.requestArticles)
+          ? t.copyWith(totalPrice: updatedTotalPrice)
+          : null,
+    );
   }
 
   void deleteMovementOfCash(MovementOfCash movement) {
     final updatedMovements = List<MovementOfCash>.from(state.movementsOfCashes);
     updatedMovements.remove(movement);
-    state = state.copyWith(movementsOfCashes: updatedMovements);
+    final t = state.transaction;
+    // Cuando solo pide método de pago, recalcular totalPrice como suma de los pagos restantes
+    final Transaction? updatedTransaction =
+        (t != null && !t.type.requestArticles)
+            ? t.copyWith(
+                totalPrice: updatedMovements.fold<double>(
+                  0,
+                  (sum, m) => sum + (m.amountPaid ?? 0),
+                ),
+              )
+            : null;
+    state = state.copyWith(
+      movementsOfCashes: updatedMovements,
+      transaction: updatedTransaction ?? t,
+    );
   }
 
   void resetTransaction() {

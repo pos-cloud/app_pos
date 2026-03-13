@@ -16,11 +16,15 @@ class TransactionCreateMapper {
 
     final now = DateTime.now().toUtc().toIso8601String();
 
+    final movementsOfArticles = transaction.type.requestArticles
+        ? state.movementsOfArticles
+            .map((m) => _mapMovementOfArticle(m, transaction))
+            .toList()
+        : <Map<String, dynamic>>[];
+
     return {
       'transaction': _mapTransaction(transaction, now),
-      'movementsOfArticles': state.movementsOfArticles
-          .map((m) => _mapMovementOfArticle(m, transaction))
-          .toList(),
+      'movementsOfArticles': movementsOfArticles,
       'movementsOfCashes': state.movementsOfCashes
           .map((m) => _mapMovementOfCash(m))
           .toList(),

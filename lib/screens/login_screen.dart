@@ -25,10 +25,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     _loadSavedBusiness();
   }
 
-  // Cargar el nombre del negocio guardado
   Future<void> _loadSavedBusiness() async {
     final savedBusiness = await _authService.getBusiness();
-    if (savedBusiness != null && savedBusiness.isNotEmpty) {
+    if (savedBusiness != null && savedBusiness.isNotEmpty && mounted) {
       setState(() {
         negocioController.text = savedBusiness;
       });
@@ -40,18 +39,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     return Scaffold(
       body: Center(
         child: SingleChildScrollView(
-          // Permite el desplazamiento si hay overflow
           padding: const EdgeInsets.all(30),
           child: Column(
-            mainAxisSize: MainAxisSize
-                .min, // Ajusta el tamaño de la columna para que no ocupe todo el espacio
+            mainAxisSize: MainAxisSize.min,
             children: [
               Image.asset(
                 'assets/logo.png',
                 height: 130,
               ),
               const SizedBox(height: 50),
-              // Campos de texto
               TextField(
                 controller: negocioController,
                 decoration: const InputDecoration(
@@ -128,9 +124,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
                     ),
-                  ),
                 ),
               ),
+            ),
             ],
           ),
         ),

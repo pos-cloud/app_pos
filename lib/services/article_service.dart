@@ -7,8 +7,9 @@ import 'package:app_pos/config.dart';
 class ArticleService {
   final AuthService _authService = AuthService();
 
-  // Carga todos los artículos una sola vez (búsqueda se hace en memoria)
-  Future<List<Article>> getArticles() async {
+  /// [makeIds]: si viene no vacío, solo artículos cuya `make` esté en esa lista
+  /// (usuario con `makes` hidratadas en login).
+  Future<List<Article>> getArticles({List<String>? makeIds}) async {
     final token = await _authService.getToken();
 
     final project = jsonEncode({
@@ -27,10 +28,19 @@ class ArticleService {
     final sort = jsonEncode({"name": 1});
     const limit = 1000000;
 
-    final match = jsonEncode({
+    final matchMap = <String, dynamic>{
       "operationType": {"\$ne": "D"},
-      "type": {"\$eq": "Final"}
-    });
+      "type": {"\$eq": "Final"},
+    };
+    if (makeIds != null && makeIds.isNotEmpty) {
+      final makeOidList = makeIds
+          .map((id) => id.trim())
+          .where((id) => id.isNotEmpty)
+          .map((id) => <String, dynamic>{r'$oid': id})
+          .toList();
+      matchMap["make"] = {"\$in": makeOidList};
+    }
+    final match = jsonEncode(matchMap);
 
     final group = {
       '_id': null,

@@ -105,9 +105,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         );
 
                     if (result.success) {
-                      // Guardar el nombre del negocio para futuros logins
                       await _authService.saveBusiness(negocioController.text);
+                      await ref
+                          .read(authUserProvider.notifier)
+                          .loadFromStorage();
 
+                      if (!context.mounted) return;
                       Navigator.pushReplacementNamed(context, MainScreen.path);
                     } else {
                       ScaffoldMessenger.of(context).showSnackBar(

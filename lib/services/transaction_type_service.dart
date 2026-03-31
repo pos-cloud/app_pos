@@ -8,10 +8,12 @@ import 'package:app_pos/config.dart';
 class TransactionTypeService {
   final AuthService _authService = AuthService();
 
-  // Método para obtener los tipos de transacciones
-  Future<List<TransactionType>> getTransactionTypes() async {
-    final token =
-        await _authService.getToken(); // Obtenemos el token desde AuthService
+  /// [transactionTypeIds]: si viene no vacío, solo tipos cuyo `_id` esté en la lista
+  /// (`permission.transactionTypes` en login), con `\$oid` para Mongo.
+  Future<List<TransactionType>> getTransactionTypes({
+    List<String>? transactionTypeIds,
+  }) async {
+    final token = await _authService.getToken();
 
     final project = jsonEncode({
       '_id': 1,
@@ -24,19 +26,28 @@ class TransactionTypeService {
       'requestArticles': 1,
       'allowPriceList': 1
     });
-    final match = jsonEncode({
+    final matchMap = <String, dynamic>{
       'operationType': {'\$ne': 'D'},
-    });
+    };
+    if (transactionTypeIds != null && transactionTypeIds.isNotEmpty) {
+      final oidList = transactionTypeIds
+          .map((id) => id.trim())
+          .where((id) => id.isNotEmpty)
+          .map((id) => <String, dynamic>{r'$oid': id})
+          .toList();
+      matchMap['_id'] = {'\$in': oidList};
+    }
+    final match = jsonEncode(matchMap);
     final sort = jsonEncode({'name': -1});
     final group = jsonEncode({});
     const limit = 100;
 
     final url = Uri.parse('${Config.apiUrl}/transaction-types').replace(
       queryParameters: {
-        'project': Uri.encodeQueryComponent(project),
-        'match': Uri.encodeQueryComponent(match),
-        'sort': Uri.encodeQueryComponent(sort),
-        'group': Uri.encodeQueryComponent(group),
+        'project': project,
+        'match': match,
+        'sort': sort,
+        'group': group,
         'limit': limit.toString(),
       },
     );

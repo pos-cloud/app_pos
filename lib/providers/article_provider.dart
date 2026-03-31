@@ -8,9 +8,10 @@ class ArticleNotifier extends StateNotifier<List<Article>> {
 
   ArticleNotifier(this._articleService) : super([]);
 
-  Future<void> loadArticles() async {
+  /// [makeIds]: IDs de marcas del usuario (`user.makes`); si es null o vacío, no se filtra por marca.
+  Future<void> loadArticles({List<String>? makeIds}) async {
     try {
-      final articles = await _articleService.getArticles();
+      final articles = await _articleService.getArticles(makeIds: makeIds);
       _allArticles = articles;
       state = articles;
     } catch (e) {

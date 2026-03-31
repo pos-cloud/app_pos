@@ -4,13 +4,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/models/transaction_movement.dart';
 
-class NavigationDrawerCustom extends StatelessWidget {
+class NavigationDrawerCustom extends ConsumerWidget {
   final Function(TransactionMovement) onItemSelected;
 
   const NavigationDrawerCustom({super.key, required this.onItemSelected});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final user = ref.watch(authUserProvider);
+    final permissionName = user?.permissionName ?? '';
+
     return Drawer(
       child: Column(
         children: [
@@ -27,21 +30,25 @@ class NavigationDrawerCustom extends StatelessWidget {
                   height: 50,
                 ),
                 const SizedBox(height: 16),
-                const Text(
-                  'Franco Androetto', // Nombre del usuario hardcodeado
-                  style: TextStyle(
+                Text(
+                  (user?.name.trim().isNotEmpty == true)
+                      ? user!.name
+                      : 'Sin usuario',
+                  style: const TextStyle(
                     fontSize: 16,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Administrador', // Correo hardcodeado
-                  style: TextStyle(
-                    fontSize: 14,
-                    color: Colors.grey,
+                if (permissionName.isNotEmpty) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                    permissionName,
+                    style: TextStyle(
+                      fontSize: 14,
+                      color: Colors.grey.shade600,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -85,23 +92,19 @@ class NavigationDrawerCustom extends StatelessWidget {
             },
           ),
           const Divider(),
-          Consumer(
-            builder: (context, ref, child) {
-              return ListTile(
-                title: const Text(
-                  "Cerrar sesión",
-                  style: TextStyle(color: Colors.red),
-                ),
-                leading: const Icon(Icons.logout, color: Colors.red, size: 24),
-                onTap: () async {
-                  final authNotifier = ref.read(authProvider.notifier);
-                  await authNotifier.logout(ref);
+          ListTile(
+            title: const Text(
+              "Cerrar sesión",
+              style: TextStyle(color: Colors.red),
+            ),
+            leading: const Icon(Icons.logout, color: Colors.red, size: 24),
+            onTap: () async {
+              final authNotifier = ref.read(authProvider.notifier);
+              await authNotifier.logout(ref);
 
-                  // Redirigir al usuario al login y limpiar el stack de navegación
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                      '/login_screen', (route) => false);
-                },
-              );
+              // Redirigir al usuario al login y limpiar el stack de navegación
+              Navigator.of(context)
+                  .pushNamedAndRemoveUntil('/login_screen', (route) => false);
             },
           ),
         ],

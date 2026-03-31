@@ -1,4 +1,5 @@
 import 'package:app_pos/providers/article_provider.dart';
+import 'package:app_pos/providers/auth_provider.dart';
 import 'package:app_pos/providers/category_provider.dart';
 import 'package:app_pos/providers/company_provider.dart';
 import 'package:app_pos/providers/payment_method_provider.dart';
@@ -38,9 +39,25 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   bool _isLoading = true;
 
   Future<void> _loadInitialData() async {
+    final user = ref.read(authUserProvider);
+    final makeIds = (user?.makes ?? [])
+        .map((m) => m.id)
+        .where((id) => id.isNotEmpty)
+        .toList();
+    final makeIdsForQuery = makeIds.isNotEmpty ? makeIds : null;
+
+    final transactionTypeIds = user?.permission?.transactionTypeIds
+            .where((id) => id.isNotEmpty)
+            .toList() ??
+        [];
+    final transactionTypeIdsForQuery =
+        transactionTypeIds.isNotEmpty ? transactionTypeIds : null;
+
     await Future.wait([
-      ref.read(transactionTypeProvider.notifier).loadTransactionTypes(),
-      ref.read(articlesProvider.notifier).loadArticles(),
+      ref.read(transactionTypeProvider.notifier).loadTransactionTypes(
+            transactionTypeIds: transactionTypeIdsForQuery,
+          ),
+      ref.read(articlesProvider.notifier).loadArticles(makeIds: makeIdsForQuery),
       ref.read(categoryProvider.notifier).loadCategories(),
       ref.read(paymentMethodProvider.notifier).loadMethodPayment(),
       ref.read(companyProvider.notifier).loadCompanies(),

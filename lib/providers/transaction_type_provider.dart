@@ -7,10 +7,11 @@ class TransactionTypeNotifier extends StateNotifier<List<TransactionType>> {
 
   TransactionTypeNotifier(this._transactionTypeService) : super([]);
 
-  Future<void> loadTransactionTypes() async {
+  Future<void> loadTransactionTypes({List<String>? transactionTypeIds}) async {
     try {
       final transactionTypes =
-          await _transactionTypeService.getTransactionTypes();
+          await _transactionTypeService.getTransactionTypes(
+              transactionTypeIds: transactionTypeIds);
       state = transactionTypes;
     } catch (e) {
       state = [];

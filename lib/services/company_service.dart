@@ -7,8 +7,8 @@ import 'package:app_pos/config.dart';
 class CompanyService {
   final AuthService _authService = AuthService();
 
-  // Carga todos los clientes una sola vez (búsqueda se hace en memoria)
-  Future<List<Company>> getCompanies() async {
+  /// Si [employeeId] viene, filtra por `company.employee` (`$oid` en la query).
+  Future<List<Company>> getCompanies({String? employeeId}) async {
     final token = await _authService.getToken();
 
     final project = jsonEncode({
@@ -26,14 +26,20 @@ class CompanyService {
       'vatCondition': 1,
       'allowCurrentAccount': 1,
       'creditLimit': 1,
+      'employee': 1,
     });
     final sort = jsonEncode({"name": 1});
     const limit = 1000000;
 
-    final match = jsonEncode({
+    final matchMap = <String, dynamic>{
       "operationType": {"\$ne": "D"},
-      "type": "Cliente"
-    });
+      "type": "Cliente",
+    };
+    final id = employeeId?.trim();
+    if (id != null && id.isNotEmpty) {
+      matchMap['employee'] = <String, dynamic>{r'$oid': id};
+    }
+    final match = jsonEncode(matchMap);
 
     final group = {
       '_id': null,

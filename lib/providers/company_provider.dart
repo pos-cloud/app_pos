@@ -8,9 +8,9 @@ class CompanyNotifier extends StateNotifier<List<Company>> {
 
   CompanyNotifier(this._companyService) : super([]);
 
-  Future<void> loadCompanies() async {
+  Future<void> loadCompanies({String? employeeId}) async {
     try {
-      final companies = await _companyService.getCompanies();
+      final companies = await _companyService.getCompanies(employeeId: employeeId);
       _allCompanies = companies;
       state = companies;
     } catch (e) {

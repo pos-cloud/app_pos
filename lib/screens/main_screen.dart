@@ -53,6 +53,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final transactionTypeIdsForQuery =
         transactionTypeIds.isNotEmpty ? transactionTypeIds : null;
 
+    String? companyEmployeeId;
+    final perm = user?.permission;
+    final emp = user?.employee;
+    if (perm != null && perm.filterCompany && emp != null && emp.id.isNotEmpty) {
+      companyEmployeeId = emp.id;
+    }
+
     await Future.wait([
       ref.read(transactionTypeProvider.notifier).loadTransactionTypes(
             transactionTypeIds: transactionTypeIdsForQuery,
@@ -60,7 +67,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
       ref.read(articlesProvider.notifier).loadArticles(makeIds: makeIdsForQuery),
       ref.read(categoryProvider.notifier).loadCategories(),
       ref.read(paymentMethodProvider.notifier).loadMethodPayment(),
-      ref.read(companyProvider.notifier).loadCompanies(),
+      ref.read(companyProvider.notifier).loadCompanies(
+            employeeId: companyEmployeeId,
+          ),
       ref.read(priceListProvider.notifier).loadPriceLists(),
     ]);
     if (mounted) setState(() => _isLoading = false);

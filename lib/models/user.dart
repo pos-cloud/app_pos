@@ -37,11 +37,9 @@ class User {
     }
 
     Employee? employee;
-    final dynamic employeeRaw = json['employee'];
-    if (employeeRaw is Map<String, dynamic>) {
-      employee = Employee.fromJson(employeeRaw);
-    } else if (employeeRaw is Map) {
-      employee = Employee.fromJson(Map<String, dynamic>.from(employeeRaw));
+    final rawEmployee = json['employee'];
+    if (rawEmployee is Map) {
+      employee = Employee.fromJson(Map<String, dynamic>.from(rawEmployee));
     }
 
     final dynamic makesRaw = json['makes'];

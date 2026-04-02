@@ -7,6 +7,7 @@ class Company {
   final String type; // 'Cliente' o 'Proveedor'
   final IdentificationType? identificationType;
   final String? identificationValue;
+  final String? employee;
 
   Company({
     this.id,
@@ -15,6 +16,7 @@ class Company {
     required this.type,
     this.identificationType,
     this.identificationValue,
+    this.employee,
   });
 
   factory Company.fromJson(Map<String, dynamic> json) {
@@ -29,6 +31,7 @@ class Company {
               : null)
           : null,
       identificationValue: json['identificationValue'],
+      employee: json['employee'] as String?,
     );
   }
 
@@ -40,6 +43,7 @@ class Company {
       'type': type,
       'identificationType': identificationType?.toJson(),
       'identificationValue': identificationValue,
+      'employee': employee,
     };
   }
 }

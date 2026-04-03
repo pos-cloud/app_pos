@@ -79,13 +79,17 @@ class TransactionCreateMapper {
 
     final stockMovement = t.type.stockMovement ?? 'Salida';
 
+    final amount = m.amount ?? 1;
+    final unitPrice = m.unitPrice ?? m.article.salePrice;
+    final lineTotal = m.salePrice ?? (unitPrice * amount);
+
     final map = <String, dynamic>{
       'article': articleId,
-      'amount': m.amount ?? 1,
-      'salePrice': m.salePrice ?? m.article.salePrice,
+      'amount': amount,
+      'salePrice': lineTotal,
       'description': m.description ?? m.article.description,
       'basePrice': m.basePrice ?? m.article.salePrice,
-      'unitPrice': m.unitPrice ?? m.article.salePrice,
+      'unitPrice': unitPrice,
       'name': m.article.description,
       'code': m.code ?? '1',
       'codeSAT': '',

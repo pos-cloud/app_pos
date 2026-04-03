@@ -1,10 +1,19 @@
 import 'package:app_pos/providers/global_transaction_provider.dart';
+import 'package:app_pos/screens/movement_of_articles_screen.dart';
 import 'package:app_pos/screens/payment_method_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+/// Misma franja superior: con cobro va a métodos de pago; solo artículos muestra total y abre detalle.
 class SelectPaymentMethodButton extends ConsumerWidget {
-  const SelectPaymentMethodButton({Key? key}) : super(key: key);
+  const SelectPaymentMethodButton({
+    Key? key,
+    this.paymentFlow = true,
+  }) : super(key: key);
+
+  /// `true`: texto "Cobrar" y navega a [PaymentMethodScreen].
+  /// `false`: texto "Total" y navega a [MovementOfArticlesScreen] (sin flujo de cobro).
+  final bool paymentFlow;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -21,7 +30,9 @@ class SelectPaymentMethodButton extends ConsumerWidget {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => const PaymentMethodScreen(),
+                builder: (context) => paymentFlow
+                    ? const PaymentMethodScreen()
+                    : const MovementOfArticlesScreen(),
               ),
             );
           },
@@ -36,9 +47,9 @@ class SelectPaymentMethodButton extends ConsumerWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                "Cobrar",
-                style: TextStyle(
+              Text(
+                paymentFlow ? 'Cobrar' : 'Total',
+                style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -46,7 +57,7 @@ class SelectPaymentMethodButton extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                "\$${totalPrice.toStringAsFixed(2)}",
+                '\$${totalPrice.toStringAsFixed(2)}',
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

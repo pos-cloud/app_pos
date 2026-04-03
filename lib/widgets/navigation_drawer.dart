@@ -7,7 +7,10 @@ import 'package:app_pos/models/transaction_movement.dart';
 class NavigationDrawerCustom extends ConsumerWidget {
   final Function(TransactionMovement) onItemSelected;
 
-  const NavigationDrawerCustom({super.key, required this.onItemSelected});
+  const NavigationDrawerCustom({
+    super.key,
+    required this.onItemSelected,
+  });
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -117,8 +120,8 @@ class NavigationDrawerCustom extends ConsumerWidget {
     switch (movement) {
       case TransactionMovement.sale:
         return const Icon(Icons.shopping_cart, size: 24);
-      // case TransactionMovement.purchase:
-      //   return const Icon(Icons.shopping_basket, size: 24);
+      case TransactionMovement.purchase:
+        return const Icon(Icons.shopping_basket, size: 24);
       // case TransactionMovement.stock:
       //   return const Icon(Icons.inventory, size: 24);
       // case TransactionMovement.production:

@@ -2,8 +2,8 @@
 
 /// Enum para representar los movimientos de transacción.
 enum TransactionMovement {
-  sale('Venta');
-  // purchase('Compra'),
+  sale('Venta'),
+  purchase('Compra');
   // stock('Stock'),
   // production('Producción'),
   // money('Fondos');

@@ -3,6 +3,27 @@ import 'package:app_pos/screens/finish_transaction_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+Future<void> finalizeCurrentTransaction(BuildContext context, WidgetRef ref) async {
+  try {
+    final notifier = ref.read(globalTransactionProvider.notifier);
+    final transactionId = await notifier.syncTransaction();
+
+    if (!context.mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(
+        builder: (_) => FinalTransactionScreen(transactionId: transactionId),
+      ),
+      (route) => false,
+    );
+  } catch (e) {
+    if (!context.mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text('Error al finalizar: $e')),
+    );
+  }
+}
+
 class FinishTransactionButton extends ConsumerWidget {
   const FinishTransactionButton({Key? key}) : super(key: key);
 
@@ -26,42 +47,22 @@ class FinishTransactionButton extends ConsumerWidget {
 
     final isCovered = totalPaid >= totalPrice - 0.01;
 
-    // Solo método de pago (sin artículos): basta con tener al menos un pago
-    final canFinalize = requestPaymentMethods
-        ? (requestArticles
-            ? hasArticles && hasPaymentMethods && isCovered
-            : hasPaymentMethods && (totalPrice <= 0 || isCovered))
-        : (!requestArticles || hasArticles);
+    final bool canFinalize;
+    if (requestPaymentMethods) {
+      canFinalize = requestArticles
+          ? hasArticles && hasPaymentMethods && isCovered
+          : hasPaymentMethods && (totalPrice <= 0 || isCovered);
+    } else {
+      canFinalize = !requestArticles || hasArticles;
+    }
 
     if (!canFinalize) {
       return const SizedBox.shrink();
     }
 
-    final tooltip =
-        requestPaymentMethods ? 'Finalizar transacción' : 'Finalizar';
-
     return FloatingActionButton(
-      onPressed: () async {
-        try {
-          final notifier = ref.read(globalTransactionProvider.notifier);
-          final transactionId = await notifier.syncTransaction();
-
-          if (!context.mounted) return;
-          Navigator.pushAndRemoveUntil(
-            context,
-            MaterialPageRoute(
-              builder: (_) => FinalTransactionScreen(transactionId: transactionId),
-            ),
-            (route) => false, // Esto elimina todas las rutas anteriores
-          );
-        } catch (e) {
-          if (!context.mounted) return;
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Error al sincronizar: $e')),
-          );
-        }
-      },
-      tooltip: tooltip,
+      onPressed: () => finalizeCurrentTransaction(context, ref),
+      tooltip: 'Finalizar transacción',
       child: const Icon(Icons.check),
     );
   }

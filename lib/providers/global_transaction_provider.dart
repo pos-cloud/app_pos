@@ -21,21 +21,29 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
           movementsOfCashes: [],
         ));
 
+  static double _totalFromArticleMovements(List<MovementOfArticle> movements) {
+    return movements.fold<double>(
+      0,
+      (sum, m) => sum + m.lineTotal,
+    );
+  }
+
   void addMovementOfArticle(Article article) {
+    const qty = 1.0;
+    final unit = article.salePrice;
     final movement = MovementOfArticle(
       description: article.description,
-      basePrice: article.salePrice,
-      unitPrice: article.salePrice,
-      salePrice: article.salePrice,
-      amount: 1,
+      basePrice: unit,
+      unitPrice: unit,
+      salePrice: unit * qty,
+      amount: qty,
       article: article,
       make: article.make,
       category: article.category,
     );
 
     final updatedMovements = [...state.movementsOfArticles, movement];
-    final updatedTotalPrice =
-        (state.transaction?.totalPrice ?? 0.0) + article.salePrice;
+    final updatedTotalPrice = _totalFromArticleMovements(updatedMovements);
 
     state = state.copyWith(
       movementsOfArticles: updatedMovements,
@@ -43,12 +51,29 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     );
   }
 
+  void updateMovementOfArticle(int index, MovementOfArticle updated) {
+    if (index < 0 || index >= state.movementsOfArticles.length) {
+      return;
+    }
+    final list = List<MovementOfArticle>.from(state.movementsOfArticles);
+    list[index] = updated;
+    final newTotal = _totalFromArticleMovements(list);
+    state = state.copyWith(
+      movementsOfArticles: list,
+      transaction: state.transaction?.copyWith(totalPrice: newTotal),
+    );
+  }
+
   void deleteMovementOfArticle(int index) {
     final updatedMovements =
         List<MovementOfArticle>.from(state.movementsOfArticles);
     updatedMovements.removeAt(index);
+    final newTotal = _totalFromArticleMovements(updatedMovements);
 
-    state = state.copyWith(movementsOfArticles: updatedMovements);
+    state = state.copyWith(
+      movementsOfArticles: updatedMovements,
+      transaction: state.transaction?.copyWith(totalPrice: newTotal),
+    );
   }
 
   void addMovementOfCash(PaymentMethod paymentMethod, double amount) {

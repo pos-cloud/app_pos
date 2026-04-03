@@ -6,7 +6,6 @@ import 'package:app_pos/providers/payment_method_provider.dart';
 import 'package:app_pos/providers/price_list_provider.dart';
 import 'package:app_pos/screens/company_screen.dart';
 import 'package:app_pos/screens/price_list_screen.dart';
-import 'package:app_pos/screens/finish_transaction_screen.dart';
 import 'package:app_pos/screens/movement_of_articles_screen.dart';
 import 'package:app_pos/widgets/animated_article_counter.dart';
 import 'package:app_pos/widgets/delete_transaction_dialog.dart';
@@ -14,7 +13,6 @@ import 'package:app_pos/widgets/finish_transaction_button.dart';
 import 'package:app_pos/widgets/select_article.dart';
 import 'package:app_pos/widgets/select_payment_method_button.dart';
 import 'package:app_pos/widgets/transaction_type_selection.dart';
-import 'package:app_pos/widgets/transaction_type_selector.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/widgets/navigation_drawer.dart';
@@ -34,8 +32,8 @@ class MainScreen extends ConsumerStatefulWidget {
 class _MainScreenState extends ConsumerState<MainScreen> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  TransactionMovement? selectedMovement;
-  TransactionType? selectedTransactionType;
+  /// Movimiento elegido en el menú (Venta, Compra, …); filtra los tipos de transacción.
+  TransactionMovement selectedMovement = TransactionMovement.sale;
   bool _isLoading = true;
 
   Future<void> _loadInitialData() async {
@@ -89,12 +87,9 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 
   List<TransactionType> _filterTransactionTypes(
       List<TransactionType> transactionTypes) {
-    if (selectedMovement == null) {
-      return transactionTypes;
-    }
     return transactionTypes
         .where((transaction) =>
-            transaction.transactionMovement == selectedMovement!.name)
+            transaction.transactionMovement == selectedMovement.name)
         .toList();
   }
 
@@ -138,10 +133,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           ? null
           : NavigationDrawerCustom(
               onItemSelected: (TransactionMovement movement) {
-                setState(() {
-                  selectedMovement = movement;
-                  selectedTransactionType = null;
-                });
+                setState(() => selectedMovement = movement);
                 Navigator.of(context).pop();
               },
             ),
@@ -172,16 +164,14 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   const AnimatedArticleCounter(),
                 ],
               )
-            : TransactionTypeSelector(
-                selectedTransactionType: null,
-                transactionTypes: _filterTransactionTypes(transactionTypes),
-                onChanged: (TransactionType? newValue) {
-                  ref
-                      .read(globalTransactionProvider.notifier)
-                      .updateTransactionType(newValue);
-                },
-              ),
+            : Text(selectedMovement.name),
         actions: [
+          if (!isTransactionActive)
+            IconButton(
+              icon: const Icon(Icons.refresh),
+              tooltip: 'Actualizar datos',
+              onPressed: () => _refresh(),
+            ),
           if (isTransactionActive &&
               currentTransaction.type.requestCompany != null)
             IconButton(
@@ -205,80 +195,86 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 );
               },
             ),
-          if (isTransactionActive &&
-              currentTransaction.type.allowPriceList == true)
-            IconButton(
-              icon: Icon(
-                Icons.list_alt,
-                color: currentTransaction.priceList != null
-                    ? Colors.amber
-                    : null,
-              ),
-              tooltip: currentTransaction.priceList != null
-                  ? 'Lista: ${currentTransaction.priceList!.name}'
-                  : 'Lista de precios',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const PriceListScreen(),
-                  ),
-                );
+          if (isTransactionActive)
+            PopupMenuButton<String>(
+              position: PopupMenuPosition.under,
+              onSelected: (value) {
+                if (value == 'lista_precios') {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const PriceListScreen(),
+                    ),
+                  );
+                } else if (value == 'eliminar') {
+                  showDialog(
+                    context: context,
+                    builder: (context) => const DeleteTransactionDialog(),
+                  );
+                }
               },
-            ),
-          PopupMenuButton<String>(
-            onSelected: (value) async {
-              if (value == 'Actualizar') {
-                await _refresh();
-              } else {
-                showDialog(
-                  context: context,
-                  builder: (context) => const DeleteTransactionDialog(),
-                );
-              }
-            },
-            itemBuilder: (BuildContext context) {
-              final iconColor = Theme.of(context).colorScheme.onSurface;
-              return [
-                PopupMenuItem<String>(
-                  value: 'Actualizar',
-                  child: Row(
-                    children: [
-                      Icon(Icons.refresh, color: iconColor),
-                      const SizedBox(width: 10),
-                      const Text('Actualizar'),
-                    ],
-                  ),
-                ),
-                if (isTransactionActive)
+              itemBuilder: (BuildContext context) {
+                final iconColor = Theme.of(context).colorScheme.onSurface;
+                final listaLabel = currentTransaction.priceList != null
+                    ? 'Lista: ${currentTransaction.priceList!.name}'
+                    : 'Lista de precios';
+                return [
+                  if (currentTransaction.type.allowPriceList == true)
+                    PopupMenuItem<String>(
+                      value: 'lista_precios',
+                      child: Row(
+                        children: [
+                          Icon(
+                            Icons.list_alt,
+                            color: currentTransaction.priceList != null
+                                ? Colors.amber.shade700
+                                : iconColor,
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              listaLabel,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   PopupMenuItem<String>(
-                    value: 'Eliminar',
+                    value: 'eliminar',
                     child: Row(
                       children: [
                         Icon(Icons.delete, color: Colors.red.shade700),
                         const SizedBox(width: 10),
-                        Text('Eliminar', style: TextStyle(color: Colors.red.shade700)),
+                        Text('Eliminar',
+                            style: TextStyle(color: Colors.red.shade700)),
                       ],
                     ),
                   ),
-              ];
-            },
-          ),
+                ];
+              },
+            ),
         ],
       ),
       body: Stack(
         children: [
           if (!isTransactionActive)
-            const TransactionTypeSelectionWidget()
+            TransactionTypeSelectionWidget(
+              movementLabel: selectedMovement.name,
+              transactionTypes: _filterTransactionTypes(transactionTypes),
+              onSelect: (TransactionType type) {
+                ref
+                    .read(globalTransactionProvider.notifier)
+                    .updateTransactionType(type);
+              },
+            )
           else
             _TransactionBody(transactionType: currentTransaction.type),
           if (_isLoading) _buildLoadingOverlay(),
         ],
       ),
-      floatingActionButton: isTransactionActive &&
-              currentTransaction.type.requestPaymentMethods
-          ? const FinishTransactionButton()
-          : null,
+      floatingActionButton:
+          isTransactionActive ? const FinishTransactionButton() : null,
     );
   }
 }
@@ -298,8 +294,8 @@ class _TransactionBody extends ConsumerWidget {
       children: [
         if (showCobrar)
           const SelectPaymentMethodButton()
-        else
-          _FinalizeButton(transactionType: transactionType),
+        else if (showArticles)
+          const SelectPaymentMethodButton(paymentFlow: false),
         Expanded(
           child: showArticles
               ? const SelectArticleWidget()
@@ -307,70 +303,5 @@ class _TransactionBody extends ConsumerWidget {
         ),
       ],
     );
-  }
-}
-
-/// Botón "Finalizar" para transacciones que no requieren métodos de pago.
-class _FinalizeButton extends ConsumerWidget {
-  final TransactionType transactionType;
-
-  const _FinalizeButton({required this.transactionType});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final globalTransaction = ref.watch(globalTransactionProvider);
-    final hasArticles = globalTransaction.movementsOfArticles.isNotEmpty;
-    final canFinalize =
-        !transactionType.requestArticles || hasArticles;
-
-    if (!canFinalize) return const SizedBox.shrink();
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-      width: double.infinity,
-      child: SizedBox(
-        height: 70,
-        child: ElevatedButton(
-          onPressed: () => _finalizeTransaction(context, ref),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.green,
-            foregroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
-            ),
-            elevation: 4,
-          ),
-          child: const Text(
-            "Finalizar",
-            style: TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _finalizeTransaction(BuildContext context, WidgetRef ref) async {
-    try {
-      final notifier = ref.read(globalTransactionProvider.notifier);
-      final transactionId = await notifier.syncTransaction();
-
-      if (!context.mounted) return;
-      Navigator.pushAndRemoveUntil(
-        context,
-        MaterialPageRoute(
-          builder: (_) => FinalTransactionScreen(transactionId: transactionId),
-        ),
-        (route) => false,
-      );
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error al finalizar: $e')),
-      );
-    }
   }
 }

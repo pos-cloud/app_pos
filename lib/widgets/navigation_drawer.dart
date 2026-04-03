@@ -67,21 +67,26 @@ class NavigationDrawerCustom extends ConsumerWidget {
                 //   },
                 // ),
                 const Divider(),
-                ...TransactionMovement.values.map((movement) {
-                  return ListTile(
-                    title: Text(movement.name),
-                    leading: _getIconForMovement(movement),
-                    onTap: () => onItemSelected(movement),
-                  );
-                }).toList(),
-                const Divider(),
                 ListTile(
-                  title: const Text("Reportes"),
-                  leading: const Icon(Icons.assessment, size: 24),
-                  onTap: () {
-                    Navigator.of(context).pushNamed('/report');
-                  },
+                  title: const Text('Venta'),
+                  leading: _getIconForMovement(TransactionMovement.sale),
+                  onTap: () => onItemSelected(TransactionMovement.sale),
                 ),
+                // Por ahora no se usa Compra.
+                // ListTile(
+                //   title: const Text('Compra'),
+                //   leading: _getIconForMovement(TransactionMovement.purchase),
+                //   onTap: () => onItemSelected(TransactionMovement.purchase),
+                // ),
+                const Divider(),
+                // Por ahora no se usa Reportes.
+                // ListTile(
+                //   title: const Text('Reportes'),
+                //   leading: const Icon(Icons.assessment, size: 24),
+                //   onTap: () {
+                //     Navigator.of(context).pushNamed('/report');
+                //   },
+                // ),
               ],
             ),
           ),

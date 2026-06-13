@@ -1,5 +1,5 @@
 import 'package:app_pos/providers/global_transaction_provider.dart';
-import 'package:app_pos/screens/finish_transaction_screen.dart';
+import 'package:app_pos/screens/sales_transaction_detail_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -53,7 +53,11 @@ Future<void> finalizeCurrentTransaction(BuildContext context, WidgetRef ref) asy
     Navigator.pushAndRemoveUntil(
       context,
       MaterialPageRoute(
-        builder: (_) => FinalTransactionScreen(transactionId: transactionId),
+        builder: (_) => SalesTransactionDetailScreen(
+          transactionId: transactionId,
+          showShareButton: true,
+          returnToMainOnBack: true,
+        ),
       ),
       (route) => false,
     );

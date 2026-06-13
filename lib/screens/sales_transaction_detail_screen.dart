@@ -1,39 +1,57 @@
+import 'package:app_pos/models/transaction_list_item.dart';
+import 'package:app_pos/providers/global_transaction_provider.dart';
+import 'package:app_pos/screens/main_screen.dart';
+import 'package:app_pos/services/print_service.dart';
+import 'package:app_pos/services/transaction_list_service.dart';
 import 'package:app_pos/utils/app_number_format.dart';
 import 'package:app_pos/models/movement_of_article.dart';
-import 'package:app_pos/models/transaction_list_item.dart';
-import 'package:app_pos/services/transaction_list_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:share_plus/share_plus.dart';
 
-class SalesTransactionDetailScreen extends StatefulWidget {
-  final TransactionListItem transaction;
+class SalesTransactionDetailScreen extends ConsumerStatefulWidget {
+  final TransactionListItem? transaction;
+  final String? transactionId;
+  final bool showShareButton;
+  final bool returnToMainOnBack;
 
   const SalesTransactionDetailScreen({
     super.key,
-    required this.transaction,
-  });
+    this.transaction,
+    this.transactionId,
+    this.showShareButton = false,
+    this.returnToMainOnBack = false,
+  }) : assert(transaction != null || transactionId != null);
 
   @override
-  State<SalesTransactionDetailScreen> createState() =>
+  ConsumerState<SalesTransactionDetailScreen> createState() =>
       _SalesTransactionDetailScreenState();
 }
 
 class _SalesTransactionDetailScreenState
-    extends State<SalesTransactionDetailScreen> {
+    extends ConsumerState<SalesTransactionDetailScreen> {
   final _service = TransactionListService();
+  final _printService = PrintService();
+  TransactionListItem? _transaction;
   Map<String, dynamic>? _transactionData;
   List<MovementOfArticle> _movements = [];
   bool _isLoading = true;
+  bool _isSharing = false;
   String? _error;
+
+  String get _transactionId =>
+      widget.transaction?.id ?? widget.transactionId ?? _transaction?.id ?? '';
 
   @override
   void initState() {
     super.initState();
+    _transaction = widget.transaction;
     Future.microtask(_loadDetail);
   }
 
   Future<void> _loadDetail() async {
-    final transactionId = widget.transaction.id;
-    if (transactionId == null || transactionId.isEmpty) {
+    final transactionId = _transactionId;
+    if (transactionId.isEmpty) {
       setState(() {
         _isLoading = false;
         _error = 'La transacción no tiene identificador';
@@ -53,8 +71,10 @@ class _SalesTransactionDetailScreenState
       ]);
 
       if (!mounted) return;
+      final transactionData = results[0] as Map<String, dynamic>;
       setState(() {
-        _transactionData = results[0] as Map<String, dynamic>;
+        _transactionData = transactionData;
+        _transaction ??= TransactionListItem.fromJson(transactionData);
         _movements = results[1] as List<MovementOfArticle>;
         _isLoading = false;
       });
@@ -67,52 +87,150 @@ class _SalesTransactionDetailScreenState
     }
   }
 
+  String _pdfFileName() {
+    final transaction = _transaction;
+    if (transaction == null) return 'comprobante.pdf';
+
+    final typeName = transaction.typeName?.trim();
+    final number = transaction.displayNumber.trim();
+    final base = (typeName != null && typeName.isNotEmpty)
+        ? (number.isNotEmpty ? '$typeName $number' : typeName)
+        : (number.isNotEmpty ? number : 'comprobante');
+
+    return '${_sanitizeFileName(base)}.pdf';
+  }
+
+  String _sanitizeFileName(String value) {
+    return value.replaceAll(RegExp(r'[\\/:*?"<>|]'), '-').trim();
+  }
+
+  Future<void> _sharePdf() async {
+    if (_isSharing || _transactionId.isEmpty) return;
+
+    setState(() => _isSharing = true);
+    try {
+      final fileName = _pdfFileName();
+      final bytes = await _printService.downloadTransactionPdf(_transactionId);
+      await Share.shareXFiles(
+        [
+          XFile.fromData(
+            bytes,
+            mimeType: 'application/pdf',
+            name: fileName,
+          ),
+        ],
+        subject: fileName.replaceAll('.pdf', ''),
+      );
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al compartir: $e')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSharing = false);
+    }
+  }
+
   String? _readCompanyName() {
     final company = _transactionData?['company'];
     if (company is Map) return company['name']?.toString();
-    return widget.transaction.companyName;
+    return _transaction?.companyName;
+  }
+
+  void _goBackToMain() {
+    ref.read(globalTransactionProvider.notifier).resetTransaction();
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const MainScreen()),
+      (route) => false,
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final transaction = _transaction;
+    final title = transaction?.displayTitle ?? 'Comprobante';
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.transaction.displayTitle),
+        automaticallyImplyLeading: !widget.returnToMainOnBack,
+        leading: widget.returnToMainOnBack
+            ? IconButton(
+                icon: const Icon(Icons.arrow_back),
+                tooltip: 'Volver',
+                onPressed: _goBackToMain,
+              )
+            : null,
+        title: Text(title),
+        actions: [
+          if (widget.showShareButton)
+            IconButton(
+              onPressed: _isLoading || _isSharing ? null : _sharePdf,
+              icon: _isSharing
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.share),
+              tooltip: 'Compartir',
+            ),
+        ],
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _error != null
-              ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(16),
-                    child: Text(_error!, textAlign: TextAlign.center),
-                  ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_error != null) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(_error!, textAlign: TextAlign.center),
+              const SizedBox(height: 16),
+              OutlinedButton(
+                onPressed: _loadDetail,
+                child: const Text('Reintentar'),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+
+    final transaction = _transaction;
+    if (transaction == null) {
+      return const Center(child: Text('Transacción no encontrada'));
+    }
+
+    return Column(
+      children: [
+        _SalesTransactionSummary(
+          transaction: transaction,
+          companyName: _readCompanyName(),
+          state: _transactionData?['state']?.toString() ?? transaction.state,
+        ),
+        Expanded(
+          child: _movements.isEmpty
+              ? const Center(
+                  child: Text('No hay artículos en esta transacción'),
                 )
-              : Column(
-                  children: [
-                    _SalesTransactionSummary(
-                      transaction: widget.transaction,
-                      companyName: _readCompanyName(),
-                      state: _transactionData?['state']?.toString() ?? '',
-                    ),
-                    Expanded(
-                      child: _movements.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No hay artículos en esta transacción',
-                              ),
-                            )
-                          : ListView.builder(
-                              padding: const EdgeInsets.all(16),
-                              itemCount: _movements.length,
-                              itemBuilder: (context, index) {
-                                final movement = _movements[index];
-                                return _MovementTile(movement: movement);
-                              },
-                            ),
-                    ),
-                  ],
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: _movements.length,
+                  itemBuilder: (context, index) {
+                    return _MovementTile(movement: _movements[index]);
+                  },
                 ),
+        ),
+      ],
     );
   }
 }
@@ -216,9 +334,7 @@ class _MovementTile extends StatelessWidget {
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Cantidad: ${amount.asQuantity}',
-            ),
+            Text('Cantidad: ${amount.asQuantity}'),
             Text(
               'Precio unitario: ${unitPrice.asMoney}',
               style: TextStyle(color: Colors.grey.shade600, fontSize: 13),

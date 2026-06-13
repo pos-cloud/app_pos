@@ -1,3 +1,4 @@
+import 'package:app_pos/utils/app_number_format.dart';
 import 'package:app_pos/providers/global_transaction_provider.dart';
 import 'package:app_pos/screens/movement_of_articles_screen.dart';
 import 'package:app_pos/screens/payment_method_screen.dart';
@@ -57,7 +58,7 @@ class SelectPaymentMethodButton extends ConsumerWidget {
               ),
               const SizedBox(height: 4),
               Text(
-                '\$${totalPrice.toStringAsFixed(2)}',
+                totalPrice.asMoney,
                 style: const TextStyle(
                   fontSize: 18,
                   fontWeight: FontWeight.bold,

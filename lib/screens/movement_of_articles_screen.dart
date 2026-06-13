@@ -1,3 +1,5 @@
+import 'package:app_pos/utils/app_number_format.dart';
+import 'package:app_pos/providers/auth_provider.dart';
 import 'package:app_pos/widgets/edit_movement_of_article_dialog.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -11,6 +13,9 @@ class MovementOfArticlesScreen extends ConsumerWidget {
     final global = ref.watch(globalTransactionProvider);
     final movements = global.movementsOfArticles;
     final transactionTotal = global.transaction?.totalPrice ?? 0.0;
+    final canEditPrice =
+        ref.watch(authUserProvider)?.permission?.collections.movementsOfArticles.edit ==
+            true;
 
     return Scaffold(
       appBar: AppBar(
@@ -43,23 +48,33 @@ class MovementOfArticlesScreen extends ConsumerWidget {
                           child: ListTile(
                             contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 12, vertical: 8),
+                            onTap: () {
+                              showDialog<void>(
+                                context: context,
+                                builder: (ctx) => EditMovementOfArticleDialog(
+                                  movement: movement,
+                                  index: index,
+                                  canEditPrice: canEditPrice,
+                                ),
+                              );
+                            },
                             title: Text(movement.article.description),
                             subtitle: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 Text(
-                                  'Cantidad: ${amount == amount.roundToDouble() ? amount.toInt() : amount.toStringAsFixed(2)}',
+                                  'Cantidad: ${amount.asQuantity}',
                                 ),
                                 Text(
-                                  'Precio unitario: \$${unitPrice.toStringAsFixed(2)}',
+                                  'Precio unitario: ${unitPrice.asMoney}',
                                   style: TextStyle(
                                     color: Colors.grey.shade600,
                                     fontSize: 13,
                                   ),
                                 ),
                                 Text(
-                                  'Total línea: \$${lineTotal.toStringAsFixed(2)}',
+                                  'Total línea: ${lineTotal.asMoney}',
                                   style: const TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 14,
@@ -78,33 +93,14 @@ class MovementOfArticlesScreen extends ConsumerWidget {
                                 ],
                               ],
                             ),
-                            trailing: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                IconButton(
-                                  icon: const Icon(Icons.edit_outlined),
-                                  tooltip: 'Editar',
-                                  onPressed: () {
-                                    showDialog<void>(
-                                      context: context,
-                                      builder: (ctx) =>
-                                          EditMovementOfArticleDialog(
-                                        movement: movement,
-                                        index: index,
-                                      ),
-                                    );
-                                  },
-                                ),
-                                IconButton(
-                                  icon: const Icon(Icons.delete, color: Colors.red),
-                                  tooltip: 'Eliminar',
-                                  onPressed: () {
-                                    ref
-                                        .read(globalTransactionProvider.notifier)
-                                        .deleteMovementOfArticle(index);
-                                  },
-                                ),
-                              ],
+                            trailing: IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              tooltip: 'Eliminar',
+                              onPressed: () {
+                                ref
+                                    .read(globalTransactionProvider.notifier)
+                                    .deleteMovementOfArticle(index);
+                              },
                             ),
                           ),
                         );
@@ -129,7 +125,7 @@ class MovementOfArticlesScreen extends ConsumerWidget {
                             ),
                       ),
                       Text(
-                        '\$${transactionTotal.toStringAsFixed(2)}',
+                        transactionTotal.asMoney,
                         style: Theme.of(context).textTheme.titleLarge?.copyWith(
                               fontWeight: FontWeight.bold,
                             ),

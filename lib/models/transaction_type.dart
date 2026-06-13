@@ -8,6 +8,7 @@ class TransactionType {
   final bool requestPaymentMethods;
   final bool requestArticles;
   final bool? allowPriceList;
+  final String? finishState;
 
   TransactionType({
     required this.id,
@@ -18,7 +19,15 @@ class TransactionType {
     this.requestPaymentMethods = false,
     this.requestArticles = false,
     this.allowPriceList,
+    this.finishState,
   });
+
+  /// Estado inicial al crear: `finishState` del tipo o `Cerrado` por defecto.
+  String get initialState {
+    final finish = finishState?.trim();
+    if (finish != null && finish.isNotEmpty) return finish;
+    return 'Cerrado';
+  }
 
   factory TransactionType.fromJson(Map<String, dynamic> json) {
     return TransactionType(
@@ -30,6 +39,7 @@ class TransactionType {
       requestPaymentMethods: json['requestPaymentMethods'] ?? false,
       requestArticles: json['requestArticles'] ?? false,
       allowPriceList: json['allowPriceList'] is bool ? json['allowPriceList'] as bool : null,
+      finishState: json['finishState']?.toString(),
     );
   }
 
@@ -43,6 +53,7 @@ class TransactionType {
       'requestPaymentMethods': requestPaymentMethods,
       'requestArticles': requestArticles,
       'allowPriceList': allowPriceList ?? false,
+      'finishState': finishState,
     };
   }
 }

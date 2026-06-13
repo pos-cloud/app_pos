@@ -1,3 +1,4 @@
+import 'package:app_pos/utils/app_number_format.dart';
 import 'package:app_pos/providers/global_transaction_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -48,7 +49,7 @@ class MovementOfCashScreen extends ConsumerWidget {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            "\$${movement.amountPaid?.toStringAsFixed(2)}",
+                            (movement.amountPaid ?? 0).asMoney,
                             style: const TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,

@@ -1,18 +1,22 @@
+import 'package:app_pos/utils/app_number_format.dart';
 import 'package:app_pos/models/movement_of_article.dart';
 import 'package:app_pos/providers/global_transaction_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-/// Edición de cantidad, precio unitario y observaciones; recalcula el total en el provider.
+/// Modal siempre editable en cantidad y observaciones.
+/// El precio unitario solo se edita si `collections.movementsOfArticles.edit` es true.
 class EditMovementOfArticleDialog extends ConsumerStatefulWidget {
   final MovementOfArticle movement;
   final int index;
+  final bool canEditPrice;
 
   const EditMovementOfArticleDialog({
     super.key,
     required this.movement,
     required this.index,
+    required this.canEditPrice,
   });
 
   @override
@@ -32,13 +36,9 @@ class _EditMovementOfArticleDialogState
     final m = widget.movement;
     final amount = m.effectiveAmount;
     final unit = m.effectiveUnitPrice;
-    final amountText = amount == amount.roundToDouble()
-        ? amount.toInt().toString()
-        : amount.toStringAsFixed(2);
-    _amountController = TextEditingController(text: amountText);
-    _unitPriceController = TextEditingController(
-      text: unit.toStringAsFixed(2),
-    );
+    _amountController = TextEditingController(text: amount.asQuantity);
+    _unitPriceController =
+        TextEditingController(text: AppNumberFormat.decimal(unit));
     _notesController = TextEditingController(text: m.notes ?? '');
   }
 
@@ -50,22 +50,22 @@ class _EditMovementOfArticleDialogState
     super.dispose();
   }
 
-  double? _parseAmount() {
-    final t = _amountController.text.trim().replaceAll(',', '.');
-    return double.tryParse(t);
-  }
+  double? _parseAmount() => AppNumberFormat.parse(_amountController.text);
 
-  double? _parsePrice() {
-    final t = _unitPriceController.text.trim().replaceAll(',', '.');
-    return double.tryParse(t);
-  }
+  double? _parsePrice() => AppNumberFormat.parse(_unitPriceController.text);
 
   void _save() {
     final amount = _parseAmount();
-    final unitPrice = _parsePrice();
-    if (amount == null || unitPrice == null) {
+    final parsedPrice = _parsePrice();
+    if (amount == null || (widget.canEditPrice && parsedPrice == null)) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Revisá cantidad y precio unitario.')),
+        SnackBar(
+          content: Text(
+            widget.canEditPrice
+                ? 'Revisá cantidad y precio unitario.'
+                : 'Revisá la cantidad.',
+          ),
+        ),
       );
       return;
     }
@@ -75,6 +75,10 @@ class _EditMovementOfArticleDialogState
       );
       return;
     }
+
+    final unitPrice = widget.canEditPrice
+        ? parsedPrice!
+        : widget.movement.effectiveUnitPrice;
     if (unitPrice < 0) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('El precio no puede ser negativo.')),
@@ -100,6 +104,8 @@ class _EditMovementOfArticleDialogState
 
   @override
   Widget build(BuildContext context) {
+    final canEditPrice = widget.canEditPrice;
+
     return AlertDialog(
       title: Text(
         widget.movement.article.description,
@@ -123,19 +129,35 @@ class _EditMovementOfArticleDialogState
               ],
             ),
             const SizedBox(height: 12),
-            TextField(
-              controller: _unitPriceController,
-              decoration: const InputDecoration(
-                labelText: 'Precio unitario',
-                prefixText: '\$ ',
-                border: OutlineInputBorder(),
+            if (canEditPrice)
+              TextField(
+                controller: _unitPriceController,
+                decoration: const InputDecoration(
+                  labelText: 'Precio unitario',
+                  prefixText: '\$ ',
+                  border: OutlineInputBorder(),
+                ),
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                ],
+              )
+            else
+              InputDecorator(
+                decoration: const InputDecoration(
+                  labelText: 'Precio unitario',
+                  border: OutlineInputBorder(),
+                  filled: true,
+                ),
+                child: Text(
+                  '\$ ${AppNumberFormat.decimal(widget.movement.effectiveUnitPrice)}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey.shade700,
+                  ),
+                ),
               ),
-              keyboardType:
-                  const TextInputType.numberWithOptions(decimal: true),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-              ],
-            ),
             const SizedBox(height: 12),
             TextField(
               controller: _notesController,

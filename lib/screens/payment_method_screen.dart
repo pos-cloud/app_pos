@@ -1,3 +1,4 @@
+import 'package:app_pos/utils/app_number_format.dart';
 import 'package:app_pos/providers/global_transaction_provider.dart';
 import 'package:app_pos/providers/payment_method_provider.dart';
 import 'package:app_pos/screens/movement_cash_screen.dart';
@@ -23,7 +24,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
   }
 
   void _updateAmountToRemaining(double remaining) {
-    _amountController.text = remaining.toStringAsFixed(2);
+    _amountController.text = AppNumberFormat.decimal(remaining);
   }
 
   @override
@@ -113,7 +114,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                 Column(
                   children: [
                     Text(
-                      "\$${totalPrice.toStringAsFixed(2)}",
+                      totalPrice.asMoney,
                       style: const TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.bold,
@@ -130,7 +131,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                 Column(
                   children: [
                     Text(
-                      "\$${totalPaid.toStringAsFixed(2)}",
+                      totalPaid.asMoney,
                       style: const TextStyle(
                         fontSize: 23,
                         fontWeight: FontWeight.bold,
@@ -168,7 +169,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                       onPressed: canAddMore
                           ? () {
                               final amount =
-                                  double.tryParse(_amountController.text) ?? 0;
+                                  AppNumberFormat.parse(_amountController.text) ?? 0;
                               if (amount <= 0) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
@@ -182,7 +183,7 @@ class _PaymentMethodScreenState extends ConsumerState<PaymentMethodScreen> {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
                                     content: Text(
-                                      'El monto no puede superar \$${remaining.toStringAsFixed(2)}',
+                                      'El monto no puede superar ${remaining.asMoney}',
                                     ),
                                   ),
                                 );

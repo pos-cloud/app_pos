@@ -119,6 +119,13 @@ class MovementOfArticle {
     };
   }
 
+  /// Metros cúbicos de la línea: solo si el artículo tiene [Article.m3].
+  double get lineM3 {
+    final m3 = article.m3;
+    if (m3 == null || m3 <= 0) return 0;
+    return m3 * effectiveAmount;
+  }
+
   /// Precio por **una** unidad (no confundir con [salePrice], que es el total de línea).
   double get effectiveUnitPrice => unitPrice ?? article.salePrice;
 

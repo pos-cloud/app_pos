@@ -265,6 +265,7 @@ class PermissionMenuSales {
   final bool voucherReader;
   final bool resto;
   final bool subscription;
+  final bool app;
 
   PermissionMenuSales({
     required this.counter,
@@ -274,6 +275,7 @@ class PermissionMenuSales {
     required this.voucherReader,
     required this.resto,
     required this.subscription,
+    required this.app,
   });
 
   factory PermissionMenuSales.fromJson(Map<String, dynamic>? json) {
@@ -286,6 +288,7 @@ class PermissionMenuSales {
       voucherReader: _bool(j, 'voucherReader'),
       resto: _bool(j, 'resto'),
       subscription: _bool(j, 'subscription'),
+      app: _bool(j, 'app'),
     );
   }
 }

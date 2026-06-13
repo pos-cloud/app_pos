@@ -1,4 +1,5 @@
 import 'package:app_pos/providers/theme_mode_provider.dart';
+import 'package:app_pos/screens/clients_screen.dart';
 import 'package:app_pos/screens/company_screen.dart';
 import 'package:app_pos/screens/login_screen.dart';
 import 'package:app_pos/screens/main_screen.dart';
@@ -30,6 +31,7 @@ class MyApp extends ConsumerWidget {
         LoginScreen.path: (context) => const LoginScreen(),
         MainScreen.path: (context) => const MainScreen(),
         CompanyScreen.path: (context) => const CompanyScreen(),
+        ClientsScreen.path: (context) => const ClientsScreen(),
         SettingsScreen.path: (context) => const SettingsScreen(),
         PriceListScreen.path: (context) => const PriceListScreen(),
       },

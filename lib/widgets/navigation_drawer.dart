@@ -1,4 +1,7 @@
 import 'package:app_pos/providers/auth_provider.dart';
+import 'package:app_pos/screens/clients_screen.dart';
+import 'package:app_pos/models/sales_transaction_states.dart';
+import 'package:app_pos/screens/sales_transactions_screen.dart';
 import 'package:app_pos/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -59,34 +62,59 @@ class NavigationDrawerCustom extends ConsumerWidget {
           Expanded(
             child: ListView(
               children: [
-                // ListTile(
-                //   title: const Text("Pendientes"),
-                //   leading: const Icon(Icons.assessment, size: 24),
-                //   onTap: () {
-                //     Navigator.of(context).pushNamed('/transactions');
-                //   },
-                // ),
-                const Divider(),
                 ListTile(
                   title: const Text('Venta'),
                   leading: _getIconForMovement(TransactionMovement.sale),
                   onTap: () => onItemSelected(TransactionMovement.sale),
                 ),
-                // Por ahora no se usa Compra.
-                // ListTile(
-                //   title: const Text('Compra'),
-                //   leading: _getIconForMovement(TransactionMovement.purchase),
-                //   onTap: () => onItemSelected(TransactionMovement.purchase),
-                // ),
                 const Divider(),
-                // Por ahora no se usa Reportes.
-                // ListTile(
-                //   title: const Text('Reportes'),
-                //   leading: const Icon(Icons.assessment, size: 24),
-                //   onTap: () {
-                //     Navigator.of(context).pushNamed('/report');
-                //   },
-                // ),
+                ListTile(
+                  title: const Text('Clientes'),
+                  leading: const Icon(Icons.people, size: 24),
+                  onTap: () {
+                    Navigator.of(context).pop();
+                    Navigator.of(context).pushNamed(ClientsScreen.path);
+                  },
+                ),
+                _sectionHeader('Listados'),
+                ExpansionTile(
+                  leading: const Icon(Icons.receipt_long_outlined, size: 24),
+                  title: const Text('Ventas'),
+                  children: [
+                    ListTile(
+                      title: const Text('Abiertas'),
+                      leading: const Icon(Icons.lock_open_outlined, size: 22),
+                      contentPadding:
+                          const EdgeInsets.only(left: 32, right: 16),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SalesTransactionsScreen(
+                              transactionState: SalesTransactionStates.open,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                    ListTile(
+                      title: const Text('Cerradas'),
+                      leading: const Icon(Icons.lock_outline, size: 22),
+                      contentPadding:
+                          const EdgeInsets.only(left: 32, right: 16),
+                      onTap: () {
+                        Navigator.of(context).pop();
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => const SalesTransactionsScreen(
+                              transactionState: SalesTransactionStates.closed,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
@@ -117,6 +145,28 @@ class NavigationDrawerCustom extends ConsumerWidget {
           ),
         ],
       ),
+    );
+  }
+
+  /// Encabezado de sección en el menú lateral.
+  Widget _sectionHeader(String title) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Divider(),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
+          child: Text(
+            title,
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: Colors.grey.shade600,
+              letterSpacing: 0.5,
+            ),
+          ),
+        ),
+      ],
     );
   }
 

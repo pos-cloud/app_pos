@@ -1,4 +1,3 @@
-import 'package:app_pos/config.dart';
 import 'package:app_pos/models/global_transaction.dart';
 import 'package:app_pos/models/movement_of_article.dart';
 import 'package:app_pos/models/movement_of_cash.dart';
@@ -42,7 +41,7 @@ class TransactionCreateMapper {
       'type': typeId,
       'totalPrice': t.totalPrice ?? 0,
       'basePrice': t.totalPrice ?? 0,
-      'state': t.state,
+      'state': t.type.initialState,
       'origin': 0,
       'letter': '',
       'number': 0,
@@ -54,6 +53,7 @@ class TransactionCreateMapper {
       'exempt': 0,
       'quotation': 1,
       'balance': t.totalPrice ?? 0,
+      'madein': 'app',
       'businessRules': [],
       'balanceAccount': 0,
     };
@@ -123,12 +123,10 @@ class TransactionCreateMapper {
       map['make'] = m.make!.id;
     }
 
-    final categoryId = m.category?.id ?? Config.defaultCategoryId;
-    if (!_hasId(categoryId)) {
-      throw Exception(
-          'El artículo "${m.article.description}" necesita categoría.');
+    final categoryId = m.category?.id ?? m.article.category?.id;
+    if (_hasId(categoryId)) {
+      map['category'] = categoryId;
     }
-    map['category'] = categoryId;
 
     return map;
   }

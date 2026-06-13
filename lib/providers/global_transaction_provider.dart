@@ -13,6 +13,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
   final TransactionService transactionService;
+  Future<String>? _syncInFlight;
 
   GlobalTransactionNotifier(this.transactionService)
       : super(GlobalTransaction(
@@ -120,6 +121,19 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
   }
 
   Future<String> syncTransaction() async {
+    if (_syncInFlight != null) {
+      return _syncInFlight!;
+    }
+
+    _syncInFlight = _performSync();
+    try {
+      return await _syncInFlight!;
+    } finally {
+      _syncInFlight = null;
+    }
+  }
+
+  Future<String> _performSync() async {
     try {
       final payload = TransactionCreateMapper.toCreatePayload(state);
       final transactionId =
@@ -140,7 +154,9 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
 
     state = state.copyWith(
         transaction: Transaction(
-            type: transactionType, totalPrice: 0.00, state: "Cerrado"),
+            type: transactionType,
+            totalPrice: 0.00,
+            state: transactionType.initialState),
         movementsOfArticles: [],
         movementsOfCashes: []);
   }

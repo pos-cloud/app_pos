@@ -3,10 +3,51 @@ import 'package:app_pos/screens/finish_transaction_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+void _showFullScreenLoading(BuildContext context) {
+  showGeneralDialog<void>(
+    context: context,
+    useRootNavigator: true,
+    barrierDismissible: false,
+    barrierLabel: 'Finalizando transacción',
+    barrierColor: Colors.black54,
+    pageBuilder: (context, animation, secondaryAnimation) {
+      return PopScope(
+        canPop: false,
+        child: Material(
+          color: Colors.transparent,
+          child: Center(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const CircularProgressIndicator(color: Colors.white),
+                const SizedBox(height: 16),
+                Text(
+                  'Finalizando transacción...',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w600,
+                      ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
+}
+
 Future<void> finalizeCurrentTransaction(BuildContext context, WidgetRef ref) async {
+  final rootNavigator = Navigator.of(context, rootNavigator: true);
+  _showFullScreenLoading(context);
+
   try {
     final notifier = ref.read(globalTransactionProvider.notifier);
     final transactionId = await notifier.syncTransaction();
+
+    if (rootNavigator.canPop()) {
+      rootNavigator.pop();
+    }
 
     if (!context.mounted) return;
     Navigator.pushAndRemoveUntil(
@@ -17,18 +58,41 @@ Future<void> finalizeCurrentTransaction(BuildContext context, WidgetRef ref) asy
       (route) => false,
     );
   } catch (e) {
-    if (!context.mounted) return;
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('Error al finalizar: $e')),
-    );
+    if (rootNavigator.canPop()) {
+      rootNavigator.pop();
+    }
+    if (context.mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error al finalizar: $e')),
+      );
+    }
   }
 }
 
-class FinishTransactionButton extends ConsumerWidget {
+class FinishTransactionButton extends ConsumerStatefulWidget {
   const FinishTransactionButton({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<FinishTransactionButton> createState() =>
+      _FinishTransactionButtonState();
+}
+
+class _FinishTransactionButtonState extends ConsumerState<FinishTransactionButton> {
+  bool _isFinalizing = false;
+
+  Future<void> _onPressed() async {
+    if (_isFinalizing) return;
+
+    setState(() => _isFinalizing = true);
+    try {
+      await finalizeCurrentTransaction(context, ref);
+    } finally {
+      if (mounted) setState(() => _isFinalizing = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final globalTransaction = ref.watch(globalTransactionProvider);
     final transaction = globalTransaction.transaction;
     if (transaction == null) return const SizedBox.shrink();
@@ -61,9 +125,18 @@ class FinishTransactionButton extends ConsumerWidget {
     }
 
     return FloatingActionButton(
-      onPressed: () => finalizeCurrentTransaction(context, ref),
+      onPressed: _isFinalizing ? null : _onPressed,
       tooltip: 'Finalizar transacción',
-      child: const Icon(Icons.check),
+      child: _isFinalizing
+          ? const SizedBox(
+              width: 24,
+              height: 24,
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: Colors.white,
+              ),
+            )
+          : const Icon(Icons.check),
     );
   }
 }

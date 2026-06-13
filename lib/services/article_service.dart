@@ -24,6 +24,7 @@ class ArticleService {
       'type': 1,
       'make': 1,
       'category': 1,
+      'm3': 1,
     });
     final sort = jsonEncode({"name": 1});
     const limit = 1000000;

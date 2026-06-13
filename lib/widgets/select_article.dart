@@ -1,3 +1,4 @@
+import 'package:app_pos/utils/app_number_format.dart';
 import 'dart:async';
 import 'package:app_pos/providers/global_transaction_provider.dart';
 import 'package:flutter/material.dart';
@@ -129,7 +130,7 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
                           trailing: Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: Text(
-                              '\$${article.salePrice.toStringAsFixed(2)}',
+                              article.salePrice.asMoney,
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 16),
                             ),

@@ -2,12 +2,15 @@ import 'package:app_pos/providers/article_provider.dart';
 import 'package:app_pos/providers/auth_provider.dart';
 import 'package:app_pos/providers/category_provider.dart';
 import 'package:app_pos/providers/company_provider.dart';
+import 'package:app_pos/providers/identification_type_provider.dart';
+import 'package:app_pos/providers/vat_condition_provider.dart';
 import 'package:app_pos/providers/payment_method_provider.dart';
 import 'package:app_pos/providers/price_list_provider.dart';
 import 'package:app_pos/screens/company_screen.dart';
 import 'package:app_pos/screens/price_list_screen.dart';
 import 'package:app_pos/screens/movement_of_articles_screen.dart';
 import 'package:app_pos/widgets/animated_article_counter.dart';
+import 'package:app_pos/widgets/transaction_m3_badge.dart';
 import 'package:app_pos/widgets/delete_transaction_dialog.dart';
 import 'package:app_pos/widgets/finish_transaction_button.dart';
 import 'package:app_pos/widgets/select_article.dart';
@@ -30,8 +33,6 @@ class MainScreen extends ConsumerStatefulWidget {
 }
 
 class _MainScreenState extends ConsumerState<MainScreen> {
-  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
-
   /// Movimiento elegido en el menú (Venta, Compra, …); filtra los tipos de transacción.
   TransactionMovement selectedMovement = TransactionMovement.sale;
   bool _isLoading = true;
@@ -69,6 +70,10 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             employeeId: companyEmployeeId,
           ),
       ref.read(priceListProvider.notifier).loadPriceLists(),
+      ref
+          .read(identificationTypeProvider.notifier)
+          .loadIdentificationTypes(),
+      ref.read(vatConditionProvider.notifier).loadVatConditions(),
     ]);
     if (mounted) setState(() => _isLoading = false);
   }
@@ -77,12 +82,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
   void initState() {
     super.initState();
 
-    Future.microtask(() async {
-      await _loadInitialData();
-      if (mounted) {
-        _scaffoldKey.currentState?.openDrawer();
-      }
-    });
+    Future.microtask(_loadInitialData);
   }
 
   List<TransactionType> _filterTransactionTypes(
@@ -128,7 +128,6 @@ class _MainScreenState extends ConsumerState<MainScreen> {
     final isTransactionActive = currentTransaction != null;
 
     return Scaffold(
-      key: _scaffoldKey,
       drawer: isTransactionActive
           ? null
           : NavigationDrawerCustom(
@@ -162,6 +161,8 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                   ),
                   const SizedBox(width: 20),
                   const AnimatedArticleCounter(),
+                  const SizedBox(width: 8),
+                  const TransactionM3Badge(),
                 ],
               )
             : Text(selectedMovement.name),

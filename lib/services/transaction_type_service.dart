@@ -24,7 +24,8 @@ class TransactionTypeService {
       'requestCompany': 1,
       'requestPaymentMethods': 1,
       'requestArticles': 1,
-      'allowPriceList': 1
+      'allowPriceList': 1,
+      'finishState': 1,
     });
     final matchMap = <String, dynamic>{
       'operationType': {'\$ne': 'D'},

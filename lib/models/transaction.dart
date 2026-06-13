@@ -51,7 +51,7 @@ class Transaction {
   }) {
     return Transaction(
       type: type ?? this.type,
-      state: state ?? "Cerrado",
+      state: state ?? this.state,
       totalPrice: totalPrice ?? this.totalPrice,
       company: company ?? this.company,
       priceList: clearPriceList ? null : (priceList ?? this.priceList),

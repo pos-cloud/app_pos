@@ -11,6 +11,7 @@ class Article {
   final String picture;
   final Make? make;
   final Category? category;
+  final double? m3;
 
   Article({
     this.id,
@@ -22,6 +23,7 @@ class Article {
     required this.picture,
     this.make,
     this.category,
+    this.m3,
   });
 
   static Make? _parseMakeOrCategoryRef(dynamic value) {
@@ -57,6 +59,7 @@ class Article {
       picture: json['picture'] ?? '',
       make: _parseMakeOrCategoryRef(json['make']),
       category: _parseCategoryRef(json['category']),
+      m3: json['m3'] is num ? (json['m3'] as num).toDouble() : null,
     );
   }
 

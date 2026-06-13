@@ -17,7 +17,9 @@ class CompanyService {
       'fantasyName': 1,
       'type': 1,
       'operationType': 1,
+      'identificationType._id': 1,
       'identificationType.name': 1,
+      'identificationType.code': 1,
       'identificationValue': 1,
       'phones': 1,
       'emails': 1,
@@ -33,7 +35,7 @@ class CompanyService {
 
     final matchMap = <String, dynamic>{
       "operationType": {"\$ne": "D"},
-      "type": "Cliente",
+      "type": Company.clientType,
     };
     final id = employeeId?.trim();
     if (id != null && id.isNotEmpty) {
@@ -79,5 +81,39 @@ class CompanyService {
     } else {
       throw Exception('Error al obtener clientes');
     }
+  }
+
+  Future<Company> updateCompany(Company company) async {
+    if (company.id == null || company.id!.isEmpty) {
+      throw Exception('El cliente no tiene identificador');
+    }
+    if (company.vatCondition == null || company.vatCondition!.isEmpty) {
+      throw Exception('La condición de IVA es obligatoria');
+    }
+    if (company.identificationType?.id == null ||
+        company.identificationType!.id!.isEmpty) {
+      throw Exception('El tipo de identificación es obligatorio');
+    }
+
+    final token = await _authService.getToken();
+    final url = Uri.parse('${Config.apiUrl}/companies/${company.id}');
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Authorization': '$token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode(company.copyWith(type: Company.clientType).toUpdateJson()),
+    );
+
+    final responseBody = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && responseBody['status'] == 200) {
+      return Company.fromJson(responseBody['result']);
+    }
+
+    final message = responseBody['message']?.toString();
+    throw Exception(message ?? 'Error al actualizar cliente');
   }
 }

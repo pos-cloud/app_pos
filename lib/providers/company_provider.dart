@@ -19,6 +19,15 @@ class CompanyNotifier extends StateNotifier<List<Company>> {
     }
   }
 
+  Future<Company> updateCompany(Company company) async {
+    final updated = await _companyService.updateCompany(company);
+    _allCompanies = _allCompanies
+        .map((c) => c.id == updated.id ? updated : c)
+        .toList();
+    state = state.map((c) => c.id == updated.id ? updated : c).toList();
+    return updated;
+  }
+
   void searchCompanies(String query) {
     if (query.trim().isEmpty) {
       state = List.from(_allCompanies);

@@ -11,8 +11,8 @@ class IdentificationType {
 
   factory IdentificationType.fromJson(Map<String, dynamic> json) {
     return IdentificationType(
-      id: json['_id'],
-      code: json['code'] ?? '1',
+      id: json['_id']?.toString(),
+      code: json['code']?.toString() ?? '1',
       name: json['name'] ?? '',
     );
   }

@@ -28,16 +28,18 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
 
   Future<void> _loadClients() async {
     final user = ref.read(authUserProvider);
-    final perm = user?.permission;
-    final emp = user?.employee;
-    String? companyEmployeeId;
-    if (perm != null && perm.filterCompany && emp != null && emp.id.isNotEmpty) {
-      companyEmployeeId = emp.id;
-    }
+    final permission = user?.permission;
+    final employeeId = user?.employee?.id ?? '';
+
+    // Mismo criterio que ventas: filtra por empleado solo si el permiso lo
+    // indica (filterCompany) y el usuario tiene un empleado asociado; en
+    // cualquier otro caso trae todos los clientes.
+    final filterByEmployee =
+        permission?.filterCompany == true && employeeId.isNotEmpty;
 
     setState(() => _isLoading = true);
     await ref.read(companyProvider.notifier).loadCompanies(
-          employeeId: companyEmployeeId,
+          employeeId: filterByEmployee ? employeeId : null,
         );
     if (mounted) setState(() => _isLoading = false);
   }

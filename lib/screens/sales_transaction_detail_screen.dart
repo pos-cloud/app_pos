@@ -12,14 +12,12 @@ import 'package:share_plus/share_plus.dart';
 class SalesTransactionDetailScreen extends ConsumerStatefulWidget {
   final TransactionListItem? transaction;
   final String? transactionId;
-  final bool showShareButton;
   final bool returnToMainOnBack;
 
   const SalesTransactionDetailScreen({
     super.key,
     this.transaction,
     this.transactionId,
-    this.showShareButton = false,
     this.returnToMainOnBack = false,
   }) : assert(transaction != null || transactionId != null);
 
@@ -163,18 +161,17 @@ class _SalesTransactionDetailScreenState
             : null,
         title: Text(title),
         actions: [
-          if (widget.showShareButton)
-            IconButton(
-              onPressed: _isLoading || _isSharing ? null : _sharePdf,
-              icon: _isSharing
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : const Icon(Icons.share),
-              tooltip: 'Compartir',
-            ),
+          IconButton(
+            onPressed: _isLoading || _isSharing ? null : _sharePdf,
+            icon: _isSharing
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(strokeWidth: 2),
+                  )
+                : const Icon(Icons.share),
+            tooltip: 'Compartir',
+          ),
         ],
       ),
       body: _buildBody(),
@@ -248,13 +245,21 @@ class _SalesTransactionSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // Colores fijos (no dependen del tema) para garantizar contraste tanto en
+    // modo claro como oscuro: el problema era que en el celular en modo oscuro
+    // el texto se volvía claro sobre un naranja casi blanco y no se leía.
+    const Color background = Color(0xFFFFE0B2); // orange.shade100
+    const Color borderColor = Color(0xFFFB8C00); // orange.shade600
+    const Color headingColor = Color(0xFFBF360C); // deepOrange.shade900
+    const Color bodyColor = Color(0xFF3E2723); // brown.shade900
+
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.orange.shade50,
+      decoration: const BoxDecoration(
+        color: background,
         border: Border(
-          bottom: BorderSide(color: Colors.orange.shade100),
+          bottom: BorderSide(color: borderColor, width: 2),
         ),
       ),
       child: Column(
@@ -265,35 +270,51 @@ class _SalesTransactionSummary extends StatelessWidget {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
+              color: headingColor,
             ),
           ),
           const SizedBox(height: 4),
           Text(
             'Estado: $state',
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: const TextStyle(
+              fontWeight: FontWeight.w700,
+              color: headingColor,
+            ),
           ),
           if (companyName != null && companyName!.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text(companyName!),
+            Text(companyName!, style: const TextStyle(color: bodyColor)),
           ],
           if (transaction.employeeClosingName != null &&
               transaction.employeeClosingName!.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text(transaction.employeeClosingName!),
+            Text(
+              transaction.employeeClosingName!,
+              style: const TextStyle(color: bodyColor),
+            ),
           ],
           if (transaction.startDate != null) ...[
             const SizedBox(height: 4),
-            Text(_formatSummaryDate(transaction.startDate!)),
+            Text(
+              _formatSummaryDate(transaction.startDate!),
+              style: const TextStyle(color: bodyColor),
+            ),
           ],
           if (transaction.deliveryAddress != null &&
               transaction.deliveryAddress!.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text('Dirección: ${transaction.deliveryAddress}'),
+            Text(
+              'Dirección: ${transaction.deliveryAddress}',
+              style: const TextStyle(color: bodyColor),
+            ),
           ],
           if (transaction.deliveryCity != null &&
               transaction.deliveryCity!.isNotEmpty) ...[
             const SizedBox(height: 4),
-            Text('Ciudad: ${transaction.deliveryCity}'),
+            Text(
+              'Ciudad: ${transaction.deliveryCity}',
+              style: const TextStyle(color: bodyColor),
+            ),
           ],
           const SizedBox(height: 8),
           Text(
@@ -301,6 +322,7 @@ class _SalesTransactionSummary extends StatelessWidget {
             style: const TextStyle(
               fontWeight: FontWeight.bold,
               fontSize: 16,
+              color: headingColor,
             ),
           ),
         ],

@@ -58,28 +58,26 @@ class _SalesTransactionsScreenState
 
   Future<void> _loadTransactions() async {
     final user = ref.read(authUserProvider);
+    final permission = user?.permission;
     final employeeId = user?.employee?.id ?? '';
+
+    // Filtra por empleado solo si el permiso lo indica y el usuario tiene un
+    // empleado asociado. En cualquier otro caso se traen todas las del estado
+    // limitadas a los tipos de transacción que el usuario puede operar.
+    final filterByEmployee =
+        permission?.filterTransaction == true && employeeId.isNotEmpty;
 
     setState(() {
       _isLoading = true;
       _error = null;
     });
 
-    if (employeeId.isEmpty) {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-          _error = 'El usuario no tiene un empleado asociado';
-        });
-      }
-      ref.read(salesTransactionsProvider.notifier).clearTransactions();
-      return;
-    }
-
     try {
       await ref.read(salesTransactionsProvider.notifier).loadTransactions(
-            employeeId: employeeId,
             transactionState: widget.transactionState,
+            employeeId: filterByEmployee ? employeeId : null,
+            transactionTypeIds:
+                filterByEmployee ? null : permission?.transactionTypeIds,
           );
     } catch (e) {
       if (mounted) {

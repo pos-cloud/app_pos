@@ -29,8 +29,15 @@ class TransactionListService {
     'updateUser',
   ];
 
+  /// Reglas de filtrado:
+  /// - Si se pasa [employeeId] (permiso `filterTransaction` activo y empleado
+  ///   asignado), se traen solo las transacciones cerradas por ese empleado.
+  /// - Si no, se traen todas las del estado pedido limitadas a los tipos de
+  ///   transacción que el usuario puede operar ([transactionTypeIds]). Si la
+  ///   lista viene vacía, no se filtra por tipo (trae todas).
   Future<List<TransactionListItem>> getSalesTransactions({
-    required String employeeId,
+    String? employeeId,
+    List<String>? transactionTypeIds,
     required String state,
   }) async {
     final token = await _authService.getToken();
@@ -56,16 +63,25 @@ class TransactionListService {
       'shipmentMethod.name': 1,
     });
 
-    final employee = employeeId.trim();
-    if (employee.isEmpty) {
-      return [];
-    }
-
     final matchMap = <String, dynamic>{
       'operationType': {'\$ne': 'D'},
       'state': state,
-      'employeeClosing._id': {'\$oid': employee},
     };
+
+    final employee = employeeId?.trim() ?? '';
+    if (employee.isNotEmpty) {
+      matchMap['employeeClosing._id'] = {'\$oid': employee};
+    } else {
+      final typeIds = (transactionTypeIds ?? [])
+          .map((id) => id.trim())
+          .where((id) => id.isNotEmpty)
+          .toList();
+      if (typeIds.isNotEmpty) {
+        matchMap['type._id'] = {
+          '\$in': typeIds.map((id) => {'\$oid': id}).toList(),
+        };
+      }
+    }
 
     final sort = jsonEncode({'startDate': -1});
     final match = jsonEncode(matchMap);

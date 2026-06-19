@@ -10,12 +10,14 @@ class SalesTransactionsNotifier
   SalesTransactionsNotifier(this._service) : super([]);
 
   Future<void> loadTransactions({
-    required String employeeId,
+    String? employeeId,
+    List<String>? transactionTypeIds,
     required String transactionState,
   }) async {
     try {
       final transactions = await _service.getSalesTransactions(
         employeeId: employeeId,
+        transactionTypeIds: transactionTypeIds,
         state: transactionState,
       );
       _allTransactions = transactions;

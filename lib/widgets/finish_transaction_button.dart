@@ -55,7 +55,6 @@ Future<void> finalizeCurrentTransaction(BuildContext context, WidgetRef ref) asy
       MaterialPageRoute(
         builder: (_) => SalesTransactionDetailScreen(
           transactionId: transactionId,
-          showShareButton: true,
           returnToMainOnBack: true,
         ),
       ),
@@ -84,8 +83,35 @@ class FinishTransactionButton extends ConsumerStatefulWidget {
 class _FinishTransactionButtonState extends ConsumerState<FinishTransactionButton> {
   bool _isFinalizing = false;
 
+  Future<bool> _confirmFinalize() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Finalizar transacción'),
+        content: const Text(
+          '¿Estás seguro de que querés finalizar la transacción? '
+          'Esta acción no se puede deshacer.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancelar'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Finalizar'),
+          ),
+        ],
+      ),
+    );
+    return confirmed ?? false;
+  }
+
   Future<void> _onPressed() async {
     if (_isFinalizing) return;
+
+    final confirmed = await _confirmFinalize();
+    if (!confirmed || !mounted) return;
 
     setState(() => _isFinalizing = true);
     try {

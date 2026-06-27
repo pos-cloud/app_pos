@@ -1,6 +1,8 @@
 import 'package:app_pos/utils/app_number_format.dart';
 import 'dart:async';
+import 'package:app_pos/models/article.dart';
 import 'package:app_pos/providers/global_transaction_provider.dart';
+import 'package:app_pos/screens/barcode_scanner_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/providers/article_provider.dart';
@@ -15,6 +17,7 @@ class SelectArticleWidget extends ConsumerStatefulWidget {
 
 class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
   late final _Debouncer _debouncer;
+  final TextEditingController _searchController = TextEditingController();
 
   @override
   void initState() {
@@ -25,7 +28,43 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
   @override
   void dispose() {
     _debouncer._timer?.cancel();
+    _searchController.dispose();
     super.dispose();
+  }
+
+  void _addArticleToTransaction(Article article) {
+    ref.read(globalTransactionProvider.notifier).addMovementOfArticle(article);
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+            'Artículo "${article.description}" añadido a la transacción.'),
+        duration: const Duration(milliseconds: 500),
+      ),
+    );
+  }
+
+  Future<void> _scanBarcode() async {
+    final code = await Navigator.of(context).push<String>(
+      MaterialPageRoute(
+        builder: (_) => const BarcodeScannerScreen(),
+      ),
+    );
+
+    if (code == null || code.trim().isEmpty || !mounted) return;
+
+    // Vuelca la lectura en el buscador y filtra.
+    _searchController.text = code;
+    final notifier = ref.read(articlesProvider.notifier);
+    notifier.searchArticles(code);
+
+    final matches = ref.read(articlesProvider);
+    if (matches.length == 1) {
+      _addArticleToTransaction(matches.first);
+    } else if (matches.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('No se encontró un producto con el código $code')),
+      );
+    }
   }
 
   @override
@@ -44,6 +83,7 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
               children: [
                 Expanded(
                   child: TextField(
+                    controller: _searchController,
                     onChanged: (text) {
                       _debouncer.run(() {
                         // Llama al método de búsqueda en el provider
@@ -63,7 +103,7 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: _scanBarcode,
                   icon: const Icon(Icons.center_focus_strong),
                   tooltip: 'Escanear código de barras',
                   padding: const EdgeInsets.all(0),
@@ -135,18 +175,7 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
                                   fontWeight: FontWeight.bold, fontSize: 16),
                             ),
                           ),
-                          onTap: () {
-                            ref
-                                .read(globalTransactionProvider.notifier)
-                                .addMovementOfArticle(article);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(
-                                    'Artículo "${article.description}" añadido a la transacción.'),
-                                duration: const Duration(milliseconds: 500),
-                              ),
-                            );
-                          },
+                          onTap: () => _addArticleToTransaction(article),
                         ),
                       );
                     },

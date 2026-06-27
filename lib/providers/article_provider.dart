@@ -20,6 +20,14 @@ class ArticleNotifier extends StateNotifier<List<Article>> {
     }
   }
 
+  Future<Article> updateArticle(Article article) async {
+    final updated = await _articleService.updateArticle(article);
+    _allArticles =
+        _allArticles.map((a) => a.id == updated.id ? updated : a).toList();
+    state = state.map((a) => a.id == updated.id ? updated : a).toList();
+    return updated;
+  }
+
   void searchArticles(String query) {
     if (query.trim().isEmpty) {
       state = List.from(_allArticles);

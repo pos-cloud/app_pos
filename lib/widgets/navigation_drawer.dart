@@ -1,6 +1,7 @@
 import 'package:app_pos/providers/auth_provider.dart';
 import 'package:app_pos/screens/clients_screen.dart';
 import 'package:app_pos/models/sales_transaction_states.dart';
+import 'package:app_pos/screens/products_screen.dart';
 import 'package:app_pos/screens/sales_transactions_screen.dart';
 import 'package:app_pos/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
@@ -19,6 +20,7 @@ class NavigationDrawerCustom extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final user = ref.watch(authUserProvider);
     final permissionName = user?.permissionName ?? '';
+    final showArticlesMenu = user?.permission?.menu.articles ?? false;
 
     return Drawer(
       child: Column(
@@ -76,6 +78,15 @@ class NavigationDrawerCustom extends ConsumerWidget {
                     Navigator.of(context).pushNamed(ClientsScreen.path);
                   },
                 ),
+                if (showArticlesMenu)
+                  ListTile(
+                    title: const Text('Productos'),
+                    leading: const Icon(Icons.inventory_2_outlined, size: 24),
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).pushNamed(ProductsScreen.path);
+                    },
+                  ),
                 _sectionHeader('Listados'),
                 ExpansionTile(
                   leading: const Icon(Icons.receipt_long_outlined, size: 24),

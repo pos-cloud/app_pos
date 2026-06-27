@@ -7,7 +7,6 @@ import 'package:app_pos/providers/vat_condition_provider.dart';
 import 'package:app_pos/providers/payment_method_provider.dart';
 import 'package:app_pos/providers/price_list_provider.dart';
 import 'package:app_pos/screens/company_screen.dart';
-import 'package:app_pos/screens/price_list_screen.dart';
 import 'package:app_pos/screens/movement_of_articles_screen.dart';
 import 'package:app_pos/widgets/animated_article_counter.dart';
 import 'package:app_pos/widgets/transaction_m3_badge.dart';
@@ -200,14 +199,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             PopupMenuButton<String>(
               position: PopupMenuPosition.under,
               onSelected: (value) {
-                if (value == 'lista_precios') {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const PriceListScreen(),
-                    ),
-                  );
-                } else if (value == 'eliminar') {
+                if (value == 'eliminar') {
                   showDialog(
                     context: context,
                     builder: (context) => const DeleteTransactionDialog(),
@@ -215,32 +207,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
                 }
               },
               itemBuilder: (BuildContext context) {
-                final iconColor = Theme.of(context).colorScheme.onSurface;
-                final listaLabel = currentTransaction.priceList != null
-                    ? 'Lista: ${currentTransaction.priceList!.name}'
-                    : 'Lista de precios';
                 return [
-                  if (currentTransaction.type.allowPriceList == true)
-                    PopupMenuItem<String>(
-                      value: 'lista_precios',
-                      child: Row(
-                        children: [
-                          Icon(
-                            Icons.list_alt,
-                            color: currentTransaction.priceList != null
-                                ? Colors.amber.shade700
-                                : iconColor,
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: Text(
-                              listaLabel,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
                   PopupMenuItem<String>(
                     value: 'eliminar',
                     child: Row(

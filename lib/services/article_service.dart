@@ -25,6 +25,7 @@ class ArticleService {
       'make': 1,
       'category': 1,
       'm3': 1,
+      'taxes': 1,
     });
     final sort = jsonEncode({"name": 1});
     const limit = 1000000;
@@ -81,5 +82,45 @@ class ArticleService {
     } else {
       throw Exception('Error al obtener artículos');
     }
+  }
+
+  Future<Article> updateArticle(Article article) async {
+    if (article.id == null || article.id!.isEmpty) {
+      throw Exception('El producto no tiene identificador');
+    }
+
+    final token = await _authService.getToken();
+    final url = Uri.parse('${Config.apiUrl}/article').replace(
+      queryParameters: {'id': article.id!},
+    );
+
+    final response = await http.put(
+      url,
+      headers: {
+        'Authorization': '$token',
+        'Content-Type': 'application/json',
+      },
+      body: jsonEncode({'article': article.toUpdateJson()}),
+    );
+
+    final responseBody = jsonDecode(response.body);
+
+    if (response.statusCode == 200 && responseBody is Map) {
+      // Éxito: el backend devuelve `{ article }` con el documento actualizado.
+      if (responseBody['article'] != null) {
+        return Article.fromJson(
+          Map<String, dynamic>.from(responseBody['article']),
+        );
+      }
+      // Validaciones de negocio devuelven 200 con `{ message }`.
+      final message = responseBody['message']?.toString();
+      if (message != null && message.isNotEmpty) {
+        throw Exception(message);
+      }
+    }
+
+    final message =
+        (responseBody is Map ? responseBody['message']?.toString() : null);
+    throw Exception(message ?? 'Error al actualizar el producto');
   }
 }

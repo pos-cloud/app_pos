@@ -4,6 +4,7 @@ import 'package:app_pos/screens/company_screen.dart';
 import 'package:app_pos/screens/login_screen.dart';
 import 'package:app_pos/screens/main_screen.dart';
 import 'package:app_pos/screens/price_list_screen.dart';
+import 'package:app_pos/screens/products_screen.dart';
 import 'package:app_pos/screens/settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -32,6 +33,7 @@ class MyApp extends ConsumerWidget {
         MainScreen.path: (context) => const MainScreen(),
         CompanyScreen.path: (context) => const CompanyScreen(),
         ClientsScreen.path: (context) => const ClientsScreen(),
+        ProductsScreen.path: (context) => const ProductsScreen(),
         SettingsScreen.path: (context) => const SettingsScreen(),
         PriceListScreen.path: (context) => const PriceListScreen(),
       },

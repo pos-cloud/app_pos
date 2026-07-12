@@ -7,7 +7,7 @@ import 'package:app_pos/config.dart';
 class TaxService {
   final AuthService _authService = AuthService();
 
-  /// Impuestos aplicables a un artículo (clasificación "Impuesto", ej. IVA).
+  /// Impuestos disponibles (mismo criterio que app-web: no eliminados).
   Future<List<Tax>> getTaxes() async {
     final token = await _authService.getToken();
 
@@ -22,16 +22,21 @@ class TaxService {
     });
     final match = jsonEncode({
       'operationType': {'\$ne': 'D'},
-      'classification': 'Impuesto',
     });
-    final sort = jsonEncode({'percentage': 1});
+    final sort = jsonEncode({'name': 1});
+    final group = jsonEncode({
+      '_id': null,
+      'count': {'\$sum': 1},
+      'items': {'\$push': '\$\$ROOT'},
+    });
 
-    final url = Uri.parse('${Config.apiUrl}/v2/taxes').replace(
+    final url = Uri.parse('${Config.apiUrl}/taxes').replace(
       queryParameters: {
         'project': project,
         'match': match,
         'sort': sort,
-        'limit': '1000',
+        'group': group,
+        'limit': '10000',
       },
     );
 
@@ -48,11 +53,45 @@ class TaxService {
     }
 
     final responseBody = jsonDecode(response.body);
-    final rawTaxes = responseBody is Map ? responseBody['taxes'] : null;
-    if (rawTaxes is! List) return [];
+    final taxes = _parseTaxes(responseBody);
 
-    return rawTaxes
-        .map<Tax>((e) => Tax.fromJson(Map<String, dynamic>.from(e)))
-        .toList();
+    // Preferimos clasificación "Impuesto" (IVA, etc.); si no hay, devolvemos todos.
+    final impuestos =
+        taxes.where((t) => t.classification == 'Impuesto').toList();
+    return impuestos.isNotEmpty ? impuestos : taxes;
+  }
+
+  List<Tax> _parseTaxes(dynamic responseBody) {
+    if (responseBody is! Map) return [];
+
+    // api-v2 Responser: { status, result: [ { items: [...] } ] } o { result: [...] }
+    final result = responseBody['result'];
+    if (result is List && result.isNotEmpty) {
+      final first = result.first;
+      if (first is Map && first['items'] is List) {
+        return (first['items'] as List)
+            .whereType<Map>()
+            .map((e) => Tax.fromJson(Map<String, dynamic>.from(e)))
+            .where((t) => t.id.isNotEmpty)
+            .toList();
+      }
+      return result
+          .whereType<Map>()
+          .map((e) => Tax.fromJson(Map<String, dynamic>.from(e)))
+          .where((t) => t.id.isNotEmpty)
+          .toList();
+    }
+
+    // Legacy: { taxes: [...] }
+    final rawTaxes = responseBody['taxes'];
+    if (rawTaxes is List) {
+      return rawTaxes
+          .whereType<Map>()
+          .map((e) => Tax.fromJson(Map<String, dynamic>.from(e)))
+          .where((t) => t.id.isNotEmpty)
+          .toList();
+    }
+
+    return [];
   }
 }

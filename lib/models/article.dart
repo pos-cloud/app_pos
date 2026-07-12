@@ -17,7 +17,7 @@ class ArticleTax {
     this.taxAmount = 0,
   });
 
-  static double _toDouble(dynamic v) =>
+  static double toDouble(dynamic v) =>
       v is num ? v.toDouble() : (double.tryParse(v?.toString() ?? '') ?? 0.0);
 
   factory ArticleTax.fromJson(Map<String, dynamic> json) {
@@ -25,7 +25,7 @@ class ArticleTax {
     String? taxId;
     String taxName = '';
     if (taxRef is Map) {
-      taxId = (taxRef['_id'] ?? taxRef['\$oid'] ?? taxRef['oid'])?.toString();
+      taxId = (taxRef['_id'] ?? taxRef[r'$oid'] ?? taxRef['oid'])?.toString();
       taxName = taxRef['name']?.toString() ?? '';
     } else if (taxRef != null) {
       taxId = taxRef.toString();
@@ -33,9 +33,25 @@ class ArticleTax {
     return ArticleTax(
       taxId: taxId,
       taxName: taxName,
-      percentage: _toDouble(json['percentage']),
-      taxBase: _toDouble(json['taxBase']),
-      taxAmount: _toDouble(json['taxAmount']),
+      percentage: toDouble(json['percentage']),
+      taxBase: toDouble(json['taxBase']),
+      taxAmount: toDouble(json['taxAmount']),
+    );
+  }
+
+  ArticleTax copyWith({
+    String? taxId,
+    String? taxName,
+    double? percentage,
+    double? taxBase,
+    double? taxAmount,
+  }) {
+    return ArticleTax(
+      taxId: taxId ?? this.taxId,
+      taxName: taxName ?? this.taxName,
+      percentage: percentage ?? this.percentage,
+      taxBase: taxBase ?? this.taxBase,
+      taxAmount: taxAmount ?? this.taxAmount,
     );
   }
 
@@ -53,6 +69,10 @@ class Article {
   final String? id;
   final String? code;
   final String? barcode;
+  final double basePrice;
+  final double costPrice;
+  final double markupPercentage;
+  final double markupPrice;
   final double salePrice;
   final String description;
   final String posDescription;
@@ -67,6 +87,10 @@ class Article {
     this.id,
     this.code,
     this.barcode,
+    this.basePrice = 0,
+    this.costPrice = 0,
+    this.markupPercentage = 0,
+    this.markupPrice = 0,
     required this.salePrice,
     required this.description,
     required this.posDescription,
@@ -80,7 +104,10 @@ class Article {
 
   static Make? _parseMakeOrCategoryRef(dynamic value) {
     if (value == null) return null;
-    final id = (value is Map ? value['_id'] ?? value['\$oid'] ?? value['oid'] : value)?.toString();
+    final id = (value is Map
+            ? value['_id'] ?? value[r'$oid'] ?? value['oid']
+            : value)
+        ?.toString();
     if (id == null || id.isEmpty) return null;
     return Make(
       id: id,
@@ -92,7 +119,10 @@ class Article {
 
   static Category? _parseCategoryRef(dynamic value) {
     if (value == null) return null;
-    final id = (value is Map ? value['_id'] ?? value['\$oid'] ?? value['oid'] : value)?.toString();
+    final id = (value is Map
+            ? value['_id'] ?? value[r'$oid'] ?? value['oid']
+            : value)
+        ?.toString();
     if (id == null || id.isEmpty) return null;
     return Category(
       id: id,
@@ -112,11 +142,20 @@ class Article {
   }
 
   factory Article.fromJson(Map<String, dynamic> json) {
+    final rawId = json['_id'];
+    final id = rawId is Map
+        ? (rawId[r'$oid'] ?? rawId['oid'] ?? rawId['_id'])?.toString()
+        : rawId?.toString();
+
     return Article(
-      id: json['_id']?.toString(),
+      id: id,
       code: json['code']?.toString(),
       barcode: json['barcode']?.toString(),
-      salePrice: json['salePrice']?.toDouble() ?? 0.0,
+      basePrice: ArticleTax.toDouble(json['basePrice']),
+      costPrice: ArticleTax.toDouble(json['costPrice']),
+      markupPercentage: ArticleTax.toDouble(json['markupPercentage']),
+      markupPrice: ArticleTax.toDouble(json['markupPrice']),
+      salePrice: ArticleTax.toDouble(json['salePrice']),
       description: json['description'] ?? '',
       posDescription: json['posDescription'] ?? '',
       picture: json['picture'] ?? '',
@@ -132,6 +171,10 @@ class Article {
     String? id,
     String? code,
     String? barcode,
+    double? basePrice,
+    double? costPrice,
+    double? markupPercentage,
+    double? markupPrice,
     double? salePrice,
     String? description,
     String? posDescription,
@@ -141,18 +184,24 @@ class Article {
     Category? category,
     double? m3,
     List<ArticleTax>? taxes,
+    bool clearMake = false,
+    bool clearCategory = false,
   }) {
     return Article(
       id: id ?? this.id,
       code: code ?? this.code,
       barcode: barcode ?? this.barcode,
+      basePrice: basePrice ?? this.basePrice,
+      costPrice: costPrice ?? this.costPrice,
+      markupPercentage: markupPercentage ?? this.markupPercentage,
+      markupPrice: markupPrice ?? this.markupPrice,
       salePrice: salePrice ?? this.salePrice,
       description: description ?? this.description,
       posDescription: posDescription ?? this.posDescription,
       picture: picture ?? this.picture,
       type: type ?? this.type,
-      make: make ?? this.make,
-      category: category ?? this.category,
+      make: clearMake ? null : (make ?? this.make),
+      category: clearCategory ? null : (category ?? this.category),
       m3: m3 ?? this.m3,
       taxes: taxes ?? this.taxes,
     );
@@ -171,8 +220,7 @@ class Article {
     return map;
   }
 
-  /// Payload para `PUT /article?id=<id>` (clave `article`). El backend valida
-  /// que `code`, `type`, `description`, `salePrice` y `category` estén presentes.
+  /// Payload para `PUT /articles/:id` (api-v2). El body es el artículo directo.
   Map<String, dynamic> toUpdateJson() {
     final map = <String, dynamic>{
       if (_hasValidId(id)) '_id': id,
@@ -180,21 +228,29 @@ class Article {
       'type': type.isNotEmpty ? type : 'Final',
       'description': description,
       'posDescription': posDescription,
+      'basePrice': basePrice,
+      'costPrice': costPrice,
+      'markupPercentage': markupPercentage,
+      'markupPrice': markupPrice,
       'salePrice': salePrice,
+      'taxes': taxes.map((t) => t.toJson()).toList(),
     };
     if (barcode != null && barcode!.isNotEmpty) {
       map['barcode'] = barcode;
+    } else {
+      map['barcode'] = '';
     }
     if (category?.id != null && category!.id!.isNotEmpty) {
       map['category'] = category!.id;
     }
     if (make?.id != null && make!.id.isNotEmpty) {
       map['make'] = make!.id;
+    } else {
+      map['make'] = null;
     }
     if (m3 != null) {
       map['m3'] = m3;
     }
-    map['taxes'] = taxes.map((t) => t.toJson()).toList();
     return map;
   }
 

@@ -18,6 +18,10 @@ class ArticleService {
       'barcode': 1,
       'description': 1,
       'posDescription': 1,
+      'basePrice': 1,
+      'costPrice': 1,
+      'markupPercentage': 1,
+      'markupPrice': 1,
       'salePrice': 1,
       'picture': 1,
       'operationType': 1,
@@ -90,9 +94,9 @@ class ArticleService {
     }
 
     final token = await _authService.getToken();
-    final url = Uri.parse('${Config.apiUrl}/article').replace(
-      queryParameters: {'id': article.id!},
-    );
+    // api-v2: PUT /articles/:id (mismo contrato que app-web).
+    final url = Uri.parse('${Config.apiUrl}/articles/${article.id}');
+    final body = jsonEncode(article.toUpdateJson());
 
     final response = await http.put(
       url,
@@ -100,23 +104,32 @@ class ArticleService {
         'Authorization': '$token',
         'Content-Type': 'application/json',
       },
-      body: jsonEncode({'article': article.toUpdateJson()}),
+      body: body,
     );
 
-    final responseBody = jsonDecode(response.body);
+    if (response.body.trim().isEmpty ||
+        response.body.trimLeft().startsWith('<')) {
+      throw Exception(
+        'Error al actualizar el producto (HTTP ${response.statusCode})',
+      );
+    }
 
-    if (response.statusCode == 200 && responseBody is Map) {
-      // Éxito: el backend devuelve `{ article }` con el documento actualizado.
-      if (responseBody['article'] != null) {
-        return Article.fromJson(
-          Map<String, dynamic>.from(responseBody['article']),
-        );
-      }
-      // Validaciones de negocio devuelven 200 con `{ message }`.
-      final message = responseBody['message']?.toString();
-      if (message != null && message.isNotEmpty) {
-        throw Exception(message);
-      }
+    late final dynamic responseBody;
+    try {
+      responseBody = jsonDecode(response.body);
+    } on FormatException {
+      throw Exception(
+        'Respuesta inválida del servidor (HTTP ${response.statusCode})',
+      );
+    }
+
+    if (response.statusCode == 200 &&
+        responseBody is Map &&
+        responseBody['status'] == 200 &&
+        responseBody['result'] != null) {
+      return Article.fromJson(
+        Map<String, dynamic>.from(responseBody['result']),
+      );
     }
 
     final message =

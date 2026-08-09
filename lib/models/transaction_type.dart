@@ -7,6 +7,7 @@ class TransactionType {
   final String? requestCompany;
   final bool requestPaymentMethods;
   final bool requestArticles;
+  final bool requestTaxes;
   final bool? allowPriceList;
   final String? finishState;
 
@@ -18,6 +19,7 @@ class TransactionType {
     this.requestCompany,
     this.requestPaymentMethods = false,
     this.requestArticles = false,
+    this.requestTaxes = true,
     this.allowPriceList,
     this.finishState,
   });
@@ -38,6 +40,7 @@ class TransactionType {
       requestCompany: json['requestCompany']?.toString(),
       requestPaymentMethods: json['requestPaymentMethods'] ?? false,
       requestArticles: json['requestArticles'] ?? false,
+      requestTaxes: json['requestTaxes'] ?? true,
       allowPriceList: json['allowPriceList'] is bool ? json['allowPriceList'] as bool : null,
       finishState: json['finishState']?.toString(),
     );
@@ -52,6 +55,7 @@ class TransactionType {
       'requestCompany': requestCompany,
       'requestPaymentMethods': requestPaymentMethods,
       'requestArticles': requestArticles,
+      'requestTaxes': requestTaxes,
       'allowPriceList': allowPriceList ?? false,
       'finishState': finishState,
     };

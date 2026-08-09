@@ -31,10 +31,12 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
 
   void addMovementOfArticle(Article article) {
     const qty = 1.0;
-    final unit = article.salePrice;
+    // Si el tipo no pide impuestos, cargar precio neto (basePrice).
+    final requestTaxes = state.transaction?.type.requestTaxes ?? true;
+    final unit = requestTaxes ? article.salePrice : article.basePrice;
     final movement = MovementOfArticle(
       description: article.description,
-      basePrice: unit,
+      basePrice: article.basePrice,
       unitPrice: unit,
       salePrice: unit * qty,
       amount: qty,

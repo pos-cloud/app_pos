@@ -37,10 +37,14 @@ class TransactionCreateMapper {
           'El tipo de transacción no tiene un id válido. Revisá que se carguen correctamente los tipos.');
     }
 
+    final total = t.totalPrice ?? 0;
+    // Sin impuestos: todo el total va a exento.
+    final exempt = t.type.requestTaxes ? 0.0 : total;
+
     final map = <String, dynamic>{
       'type': typeId,
-      'totalPrice': t.totalPrice ?? 0,
-      'basePrice': t.totalPrice ?? 0,
+      'totalPrice': total,
+      'basePrice': total,
       'state': t.type.initialState,
       'origin': 0,
       'letter': '',
@@ -50,9 +54,9 @@ class TransactionCreateMapper {
       'endDate': now,
       'expirationDate': now,
       'VATPeriod': '',
-      'exempt': 0,
+      'exempt': exempt,
       'quotation': 1,
-      'balance': t.totalPrice ?? 0,
+      'balance': total,
       'madein': 'app',
       'businessRules': [],
       'balanceAccount': 0,
@@ -80,7 +84,9 @@ class TransactionCreateMapper {
     final stockMovement = t.type.stockMovement ?? 'Salida';
 
     final amount = m.amount ?? 1;
-    final unitPrice = m.unitPrice ?? m.article.salePrice;
+    final fallbackUnit =
+        t.type.requestTaxes ? m.article.salePrice : m.article.basePrice;
+    final unitPrice = m.unitPrice ?? fallbackUnit;
     final lineTotal = m.salePrice ?? (unitPrice * amount);
 
     final map = <String, dynamic>{
@@ -88,7 +94,7 @@ class TransactionCreateMapper {
       'amount': amount,
       'salePrice': lineTotal,
       'description': m.description ?? m.article.description,
-      'basePrice': m.basePrice ?? m.article.salePrice,
+      'basePrice': m.basePrice ?? m.article.basePrice,
       'unitPrice': unitPrice,
       'name': m.article.description,
       'code': m.code ?? '1',

@@ -24,6 +24,7 @@ class TransactionTypeService {
       'requestCompany': 1,
       'requestPaymentMethods': 1,
       'requestArticles': 1,
+      'requestTaxes': 1,
       'allowPriceList': 1,
       'finishState': 1,
     });

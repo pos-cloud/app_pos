@@ -70,6 +70,9 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
   @override
   Widget build(BuildContext context) {
     final articles = ref.watch(articlesProvider);
+    final requestTaxes =
+        ref.watch(globalTransactionProvider).transaction?.type.requestTaxes ??
+            true;
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -119,6 +122,9 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
                     itemCount: articles.length,
                     itemBuilder: (context, index) {
                       final article = articles[index];
+                      final displayPrice = requestTaxes
+                          ? article.salePrice
+                          : article.basePrice;
                       return Container(
                         margin: const EdgeInsets.only(
                             bottom: 4), // Márgenes más pequeños
@@ -170,7 +176,7 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
                           trailing: Padding(
                             padding: const EdgeInsets.only(right: 8.0),
                             child: Text(
-                              article.salePrice.asMoney,
+                              displayPrice.asMoney,
                               style: const TextStyle(
                                   fontWeight: FontWeight.bold, fontSize: 16),
                             ),

@@ -41,6 +41,11 @@ class Transaction {
     };
   }
 
+  bool get hasAssignedCompany {
+    final id = company?.id?.trim();
+    return id != null && id.isNotEmpty;
+  }
+
   Transaction copyWith({
     TransactionType? type,
     double? totalPrice,

@@ -255,4 +255,31 @@ class Article {
   }
 
   static bool _hasValidId(String? v) => v != null && v.isNotEmpty;
+
+  static double _round2(double value) => (value * 100).round() / 100;
+
+  /// Precio de venta sin impuestos, extraído del precio final.
+  /// Misma lógica que app-web: internos (alícuota 0) se restan primero y el IVA
+  /// se descuenta con `salePrice / (percentage/100 + 1)`.
+  double get unitPriceWithoutTaxes {
+    if (taxes.isEmpty) return _round2(salePrice);
+
+    var impInt = 0.0;
+    var percentSum = 0.0;
+    for (final tax in taxes) {
+      if (tax.percentage == 0) {
+        impInt += tax.taxAmount;
+      } else {
+        percentSum += tax.percentage;
+      }
+    }
+
+    if (percentSum == 0) return _round2(salePrice - impInt);
+    return _round2((salePrice - impInt) / (percentSum / 100 + 1));
+  }
+
+  /// Precio unitario a mostrar/cargar según si el tipo pide impuestos.
+  double unitPriceFor({required bool requestTaxes}) {
+    return requestTaxes ? salePrice : unitPriceWithoutTaxes;
+  }
 }

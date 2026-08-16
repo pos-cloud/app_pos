@@ -18,6 +18,7 @@ import 'package:app_pos/widgets/transaction_type_selection.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:app_pos/widgets/navigation_drawer.dart';
+import 'package:app_pos/models/transaction.dart';
 import 'package:app_pos/models/transaction_type.dart';
 import 'package:app_pos/models/transaction_movement.dart';
 import 'package:app_pos/providers/global_transaction_provider.dart';
@@ -90,6 +91,38 @@ class _MainScreenState extends ConsumerState<MainScreen> {
         .where((transaction) =>
             transaction.transactionMovement == selectedMovement.name)
         .toList();
+  }
+
+  bool _isCompanyMissing(Transaction transaction) {
+    return transaction.type.requiresCompanySelection &&
+        !transaction.hasAssignedCompany;
+  }
+
+  Future<void> _openCompanyScreen() {
+    return Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => const CompanyScreen(),
+      ),
+    );
+  }
+
+  Future<void> _onSelectTransactionType(TransactionType type) async {
+    ref.read(globalTransactionProvider.notifier).updateTransactionType(type);
+
+    if (!type.requiresCompanySelection) return;
+
+    await _openCompanyScreen();
+    if (!mounted) return;
+
+    final current = ref.read(globalTransactionProvider).transaction;
+    if (current != null && _isCompanyMissing(current)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Seleccioná un cliente para continuar'),
+        ),
+      );
+    }
   }
 
   Future<void> _refresh() async {
@@ -173,27 +206,24 @@ class _MainScreenState extends ConsumerState<MainScreen> {
               onPressed: () => _refresh(),
             ),
           if (isTransactionActive &&
-              currentTransaction.type.requestCompany != null)
+              currentTransaction.type.requestsCompany)
             IconButton(
               icon: Icon(
-                currentTransaction.company == null
+                _isCompanyMissing(currentTransaction)
                     ? Icons.person_add
                     : Icons.person,
-                color: currentTransaction.company != null
-                    ? Colors.amber
-                    : null,
+                color: _isCompanyMissing(currentTransaction)
+                    ? Colors.red
+                    : Colors.amber,
               ),
-              tooltip: currentTransaction.company != null
-                  ? 'Cliente: ${currentTransaction.company!.name}'
-                  : 'Seleccionar cliente',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const CompanyScreen(),
-                  ),
-                );
-              },
+              tooltip: currentTransaction.hasAssignedCompany
+                  ? (currentTransaction.company!.name.isNotEmpty
+                      ? 'Cliente: ${currentTransaction.company!.name}'
+                      : 'Cliente asignado')
+                  : (currentTransaction.type.requiresCompanySelection
+                      ? 'Cliente obligatorio'
+                      : 'Seleccionar cliente'),
+              onPressed: () => _openCompanyScreen(),
             ),
           if (isTransactionActive)
             PopupMenuButton<String>(
@@ -230,11 +260,7 @@ class _MainScreenState extends ConsumerState<MainScreen> {
             TransactionTypeSelectionWidget(
               movementLabel: selectedMovement.name,
               transactionTypes: _filterTransactionTypes(transactionTypes),
-              onSelect: (TransactionType type) {
-                ref
-                    .read(globalTransactionProvider.notifier)
-                    .updateTransactionType(type);
-              },
+              onSelect: _onSelectTransactionType,
             )
           else
             _TransactionBody(transactionType: currentTransaction.type),
@@ -248,13 +274,13 @@ class _MainScreenState extends ConsumerState<MainScreen> {
 }
 
 /// Cuerpo de la transacción que muestra condicionalmente según el tipo.
-class _TransactionBody extends ConsumerWidget {
+class _TransactionBody extends StatelessWidget {
   final TransactionType transactionType;
 
   const _TransactionBody({required this.transactionType});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final showArticles = transactionType.requestArticles;
     final showCobrar = transactionType.requestPaymentMethods;
 

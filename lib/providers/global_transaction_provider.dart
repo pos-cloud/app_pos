@@ -31,12 +31,11 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
 
   void addMovementOfArticle(Article article) {
     const qty = 1.0;
-    // Si el tipo no pide impuestos, cargar precio neto (basePrice).
     final requestTaxes = state.transaction?.type.requestTaxes ?? true;
-    final unit = requestTaxes ? article.salePrice : article.basePrice;
+    final unit = article.unitPriceFor(requestTaxes: requestTaxes);
     final movement = MovementOfArticle(
       description: article.description,
-      basePrice: article.basePrice,
+      basePrice: requestTaxes ? article.basePrice : unit,
       unitPrice: unit,
       salePrice: unit * qty,
       amount: qty,
@@ -137,6 +136,7 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
 
   Future<String> _performSync() async {
     try {
+      _ensureCompanyReady();
       final payload = TransactionCreateMapper.toCreatePayload(state);
       final transactionId =
           await transactionService.syncTransaction(payload);
@@ -149,6 +149,24 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     }
   }
 
+  void _ensureCompanyReady() {
+    final t = state.transaction;
+    if (t == null) return;
+
+    if (!t.hasAssignedCompany && t.type.hasDefaultCompany) {
+      state = state.copyWith(
+        transaction: t.copyWith(company: t.type.company),
+      );
+    }
+
+    final current = state.transaction!;
+    if (current.type.requiresCompanySelection && !current.hasAssignedCompany) {
+      throw Exception(
+        'Debés seleccionar un cliente para este tipo de transacción',
+      );
+    }
+  }
+
   void updateTransactionType(TransactionType? transactionType) {
     if (transactionType == null) {
       throw Exception('Transaction type cannot be null');
@@ -158,7 +176,8 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
         transaction: Transaction(
             type: transactionType,
             totalPrice: 0.00,
-            state: transactionType.initialState),
+            state: transactionType.initialState,
+            company: transactionType.company),
         movementsOfArticles: [],
         movementsOfCashes: []);
   }

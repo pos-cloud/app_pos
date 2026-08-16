@@ -122,9 +122,8 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
                     itemCount: articles.length,
                     itemBuilder: (context, index) {
                       final article = articles[index];
-                      final displayPrice = requestTaxes
-                          ? article.salePrice
-                          : article.basePrice;
+                      final displayPrice =
+                          article.unitPriceFor(requestTaxes: requestTaxes);
                       return Container(
                         margin: const EdgeInsets.only(
                             bottom: 4), // Márgenes más pequeños

@@ -84,8 +84,9 @@ class TransactionCreateMapper {
     final stockMovement = t.type.stockMovement ?? 'Salida';
 
     final amount = m.amount ?? 1;
-    final fallbackUnit =
-        t.type.requestTaxes ? m.article.salePrice : m.article.basePrice;
+    final fallbackUnit = m.article.unitPriceFor(
+      requestTaxes: t.type.requestTaxes,
+    );
     final unitPrice = m.unitPrice ?? fallbackUnit;
     final lineTotal = m.salePrice ?? (unitPrice * amount);
 
@@ -94,7 +95,8 @@ class TransactionCreateMapper {
       'amount': amount,
       'salePrice': lineTotal,
       'description': m.description ?? m.article.description,
-      'basePrice': m.basePrice ?? m.article.basePrice,
+      'basePrice': m.basePrice ??
+          (t.type.requestTaxes ? m.article.basePrice : fallbackUnit),
       'unitPrice': unitPrice,
       'name': m.article.description,
       'code': m.code ?? '1',

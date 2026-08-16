@@ -22,6 +22,7 @@ class TransactionTypeService {
       'stockMovement': 1,
       'operationType': 1,
       'requestCompany': 1,
+      'company': 1,
       'requestPaymentMethods': 1,
       'requestArticles': 1,
       'requestTaxes': 1,

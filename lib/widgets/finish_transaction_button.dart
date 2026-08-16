@@ -140,9 +140,13 @@ class _FinishTransactionButtonState extends ConsumerState<FinishTransactionButto
     );
 
     final isCovered = totalPaid >= totalPrice - 0.01;
+    final hasRequiredCompany =
+        !type.requiresCompanySelection || transaction.hasAssignedCompany;
 
     final bool canFinalize;
-    if (requestPaymentMethods) {
+    if (!hasRequiredCompany) {
+      canFinalize = false;
+    } else if (requestPaymentMethods) {
       canFinalize = requestArticles
           ? hasArticles && hasPaymentMethods && isCovered
           : hasPaymentMethods && (totalPrice <= 0 || isCovered);

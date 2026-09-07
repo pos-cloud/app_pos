@@ -8,6 +8,8 @@ class Transaction {
   final double? totalPrice;
   final Company? company;
   final PriceList? priceList;
+  final double discountPercent;
+  final double discountAmount;
 
   Transaction({
     required this.type,
@@ -15,6 +17,8 @@ class Transaction {
     required this.totalPrice,
     this.company,
     this.priceList,
+    this.discountPercent = 0,
+    this.discountAmount = 0,
   });
 
   // Método de fábrica para convertir un Map en un objeto Transaction
@@ -29,6 +33,8 @@ class Transaction {
           json['priceList'] != null
               ? PriceList.fromJson(json['priceList'] as Map<String, dynamic>)
               : null,
+      discountPercent: (json['discountPercent'] ?? 0).toDouble(),
+      discountAmount: (json['discountAmount'] ?? 0).toDouble(),
     );
   }
 
@@ -38,6 +44,8 @@ class Transaction {
       'type': type.toJson(),
       'totalPrice': totalPrice,
       'company': company?.toJson(),
+      'discountPercent': discountPercent,
+      'discountAmount': discountAmount,
     };
   }
 
@@ -46,6 +54,8 @@ class Transaction {
     return id != null && id.isNotEmpty;
   }
 
+  bool get hasCompanyDiscount => discountPercent > 0;
+
   Transaction copyWith({
     TransactionType? type,
     double? totalPrice,
@@ -53,6 +63,8 @@ class Transaction {
     Company? company,
     PriceList? priceList,
     bool clearPriceList = false,
+    double? discountPercent,
+    double? discountAmount,
   }) {
     return Transaction(
       type: type ?? this.type,
@@ -60,6 +72,8 @@ class Transaction {
       totalPrice: totalPrice ?? this.totalPrice,
       company: company ?? this.company,
       priceList: clearPriceList ? null : (priceList ?? this.priceList),
+      discountPercent: discountPercent ?? this.discountPercent,
+      discountAmount: discountAmount ?? this.discountAmount,
     );
   }
 }

@@ -27,6 +27,7 @@ class TransactionTypeService {
       'requestArticles': 1,
       'requestTaxes': 1,
       'allowPriceList': 1,
+      'allowCompanyDiscount': 1,
       'finishState': 1,
     });
     final matchMap = <String, dynamic>{

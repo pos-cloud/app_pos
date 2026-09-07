@@ -13,6 +13,8 @@ class TransactionType {
   final bool requestArticles;
   final bool requestTaxes;
   final bool? allowPriceList;
+  /// Si el tipo admite el descuento configurado en el cliente/grupo.
+  final bool allowCompanyDiscount;
   final String? finishState;
 
   TransactionType({
@@ -26,6 +28,7 @@ class TransactionType {
     this.requestArticles = false,
     this.requestTaxes = true,
     this.allowPriceList,
+    this.allowCompanyDiscount = true,
     this.finishState,
   });
 
@@ -61,6 +64,9 @@ class TransactionType {
       requestArticles: json['requestArticles'] ?? false,
       requestTaxes: json['requestTaxes'] ?? true,
       allowPriceList: json['allowPriceList'] is bool ? json['allowPriceList'] as bool : null,
+      allowCompanyDiscount: json['allowCompanyDiscount'] is bool
+          ? json['allowCompanyDiscount'] as bool
+          : true,
       finishState: json['finishState']?.toString(),
     );
   }
@@ -98,6 +104,7 @@ class TransactionType {
       'requestArticles': requestArticles,
       'requestTaxes': requestTaxes,
       'allowPriceList': allowPriceList ?? false,
+      'allowCompanyDiscount': allowCompanyDiscount,
       'finishState': finishState,
     };
   }

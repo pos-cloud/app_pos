@@ -1,6 +1,8 @@
 import 'dart:async';
 import 'package:app_pos/providers/company_provider.dart';
 import 'package:app_pos/providers/global_transaction_provider.dart';
+import 'package:app_pos/utils/app_number_format.dart';
+import 'package:app_pos/widgets/company_discount_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -77,6 +79,18 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                               fontSize: 16,
                             ),
                           ),
+                          if (transactionCompany.hasDiscount)
+                            Padding(
+                              padding: const EdgeInsets.only(top: 4),
+                              child: Text(
+                                'Descuento ${transactionCompany.totalDiscount.asPercent}',
+                                style: TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                  color: Colors.green.shade800,
+                                ),
+                              ),
+                            ),
                           if (transactionCompany.identificationType?.name !=
                                   null &&
                               transactionCompany.identificationValue != null)
@@ -159,10 +173,21 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                                         style: const TextStyle(fontSize: 12),
                                       )
                                     : null,
-                            trailing: isSelected
-                                ? const Icon(Icons.check_circle,
-                                    color: Colors.green, size: 28)
-                                : null,
+                            trailing: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                if (company.hasDiscount)
+                                  Padding(
+                                    padding: const EdgeInsets.only(right: 8),
+                                    child: CompanyDiscountChip(
+                                      percent: company.totalDiscount,
+                                    ),
+                                  ),
+                                if (isSelected)
+                                  const Icon(Icons.check_circle,
+                                      color: Colors.green, size: 28),
+                              ],
+                            ),
                             onTap: () {
                               // Actualizar la company en la transacción
                               ref
@@ -172,11 +197,24 @@ class _CompanyScreenState extends ConsumerState<CompanyScreen> {
                               // Volver a la pantalla anterior
                               Navigator.pop(context);
 
+                              final allowDiscount = ref
+                                      .read(globalTransactionProvider)
+                                      .transaction
+                                      ?.type
+                                      .allowCompanyDiscount ??
+                                  true;
+                              final appliedDiscount = allowDiscount &&
+                                  company.hasDiscount;
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                      'Cliente "${company.name}" seleccionado.'),
-                                  duration: const Duration(milliseconds: 800),
+                                    appliedDiscount
+                                        ? 'Cliente "${company.name}" seleccionado. Descuento ${company.totalDiscount.asPercent} aplicado.'
+                                        : 'Cliente "${company.name}" seleccionado.',
+                                  ),
+                                  duration: Duration(
+                                    milliseconds: appliedDiscount ? 1600 : 800,
+                                  ),
                                 ),
                               );
                             },

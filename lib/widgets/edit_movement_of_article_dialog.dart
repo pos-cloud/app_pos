@@ -158,6 +158,17 @@ class _EditMovementOfArticleDialogState
                   ),
                 ),
               ),
+            if ((widget.movement.transactionDiscountAmount ?? 0) > 0) ...[
+              const SizedBox(height: 8),
+              Text(
+                'Con descuento cliente: ${widget.movement.discountedUnitPrice.asMoney}',
+                style: TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.green.shade800,
+                ),
+              ),
+            ],
             const SizedBox(height: 12),
             TextField(
               controller: _notesController,

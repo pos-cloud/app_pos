@@ -27,6 +27,13 @@ abstract final class AppNumberFormat {
     return NumberFormat('#,##0.${'0' * digits}', 'es_AR').format(value);
   }
 
+  static String percent(double value) {
+    if (value == value.roundToDouble()) {
+      return '${value.toInt()}%';
+    }
+    return '${_quantity.format(value)}%';
+  }
+
   /// Parsea texto con formato local (`1.234,56` o `1234,56`).
   static double? parse(String text) {
     final normalized =
@@ -40,6 +47,8 @@ extension AppNumberFormatExtension on double {
   String get asMoney => AppNumberFormat.money(this);
 
   String get asQuantity => AppNumberFormat.quantity(this);
+
+  String get asPercent => AppNumberFormat.percent(this);
 }
 
 extension AppNumberFormatNullableExtension on double? {

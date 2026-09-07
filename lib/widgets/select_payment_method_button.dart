@@ -18,14 +18,16 @@ class SelectPaymentMethodButton extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final totalPrice =
-        ref.watch(globalTransactionProvider).transaction?.totalPrice ?? 0.0;
+    final transaction = ref.watch(globalTransactionProvider).transaction;
+    final totalPrice = transaction?.totalPrice ?? 0.0;
+    final hasDiscount = transaction?.hasCompanyDiscount ?? false;
+    final discountPercent = transaction?.discountPercent ?? 0;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
       width: double.infinity,
       child: SizedBox(
-        height: 70,
+        height: hasDiscount ? 88 : 70,
         child: ElevatedButton(
           onPressed: () {
             Navigator.push(
@@ -65,6 +67,17 @@ class SelectPaymentMethodButton extends ConsumerWidget {
                   color: Colors.white,
                 ),
               ),
+              if (hasDiscount) ...[
+                const SizedBox(height: 2),
+                Text(
+                  'Desc. ${discountPercent.asPercent}',
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
+              ],
             ],
           ),
         ),

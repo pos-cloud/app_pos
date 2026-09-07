@@ -22,10 +22,71 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
           movementsOfCashes: [],
         ));
 
-  static double _totalFromArticleMovements(List<MovementOfArticle> movements) {
+  static double _round2(double value) => (value * 100).round() / 100;
+
+  static double _grossFromArticleMovements(List<MovementOfArticle> movements) {
     return movements.fold<double>(
       0,
       (sum, m) => sum + m.lineTotal,
+    );
+  }
+
+  /// Descuento del cliente/grupo si el tipo de transacción lo permite.
+  static double _discountPercentFor(Company? company, TransactionType type) {
+    if (!type.allowCompanyDiscount || company == null) return 0;
+    final percent = company.totalDiscount;
+    if (percent <= 0) return 0;
+    return percent > 100 ? 100 : percent;
+  }
+
+  static double _discountAmountFor(double gross, double discountPercent) {
+    if (discountPercent <= 0 || gross <= 0) return 0;
+    return _round2(gross * discountPercent / 100);
+  }
+
+  static double _netTotal(double gross, double discountPercent) {
+    return _round2(gross - _discountAmountFor(gross, discountPercent));
+  }
+
+  List<MovementOfArticle> _withTransactionDiscount(
+    List<MovementOfArticle> movements,
+    double discountPercent,
+  ) {
+    return movements
+        .map((m) {
+          final unit = m.effectiveUnitPrice;
+          final perUnit = discountPercent > 0
+              ? _round2(unit * discountPercent / 100)
+              : 0.0;
+          return m.copyWith(transactionDiscountAmount: perUnit);
+        })
+        .toList();
+  }
+
+  Transaction? _transactionWithArticleTotals(
+    List<MovementOfArticle> movements, {
+    Company? company,
+    double? discountPercent,
+  }) {
+    final current = state.transaction;
+    if (current == null) return null;
+
+    final percent = discountPercent ?? current.discountPercent;
+
+    if (!current.type.requestArticles) {
+      return current.copyWith(
+        company: company ?? current.company,
+        discountPercent: percent,
+        discountAmount: 0,
+      );
+    }
+
+    final gross = _grossFromArticleMovements(movements);
+    return current.copyWith(
+      company: company ?? current.company,
+      discountPercent: percent,
+      discountAmount: _discountAmountFor(gross, percent),
+      totalPrice: _netTotal(gross, percent),
     );
   }
 
@@ -33,6 +94,10 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     const qty = 1.0;
     final requestTaxes = state.transaction?.type.requestTaxes ?? true;
     final unit = article.unitPriceFor(requestTaxes: requestTaxes);
+    final discountPercent = state.transaction?.discountPercent ?? 0;
+    final transactionDiscountAmount = discountPercent > 0
+        ? _round2(unit * discountPercent / 100)
+        : 0.0;
     final movement = MovementOfArticle(
       description: article.description,
       basePrice: requestTaxes ? article.basePrice : unit,
@@ -42,14 +107,14 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
       article: article,
       make: article.make,
       category: article.category,
+      transactionDiscountAmount: transactionDiscountAmount,
     );
 
     final updatedMovements = [...state.movementsOfArticles, movement];
-    final updatedTotalPrice = _totalFromArticleMovements(updatedMovements);
 
     state = state.copyWith(
       movementsOfArticles: updatedMovements,
-      transaction: state.transaction?.copyWith(totalPrice: updatedTotalPrice),
+      transaction: _transactionWithArticleTotals(updatedMovements),
     );
   }
 
@@ -57,12 +122,18 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     if (index < 0 || index >= state.movementsOfArticles.length) {
       return;
     }
+    final discountPercent = state.transaction?.discountPercent ?? 0;
+    final unit = updated.effectiveUnitPrice;
+    final withDiscount = updated.copyWith(
+      transactionDiscountAmount: discountPercent > 0
+          ? _round2(unit * discountPercent / 100)
+          : 0.0,
+    );
     final list = List<MovementOfArticle>.from(state.movementsOfArticles);
-    list[index] = updated;
-    final newTotal = _totalFromArticleMovements(list);
+    list[index] = withDiscount;
     state = state.copyWith(
       movementsOfArticles: list,
-      transaction: state.transaction?.copyWith(totalPrice: newTotal),
+      transaction: _transactionWithArticleTotals(list),
     );
   }
 
@@ -70,11 +141,10 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     final updatedMovements =
         List<MovementOfArticle>.from(state.movementsOfArticles);
     updatedMovements.removeAt(index);
-    final newTotal = _totalFromArticleMovements(updatedMovements);
 
     state = state.copyWith(
       movementsOfArticles: updatedMovements,
-      transaction: state.transaction?.copyWith(totalPrice: newTotal),
+      transaction: _transactionWithArticleTotals(updatedMovements),
     );
   }
 
@@ -154,8 +224,19 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
     if (t == null) return;
 
     if (!t.hasAssignedCompany && t.type.hasDefaultCompany) {
+      final company = t.type.company!;
+      final percent = _discountPercentFor(company, t.type);
+      final movements = _withTransactionDiscount(
+        state.movementsOfArticles,
+        percent,
+      );
       state = state.copyWith(
-        transaction: t.copyWith(company: t.type.company),
+        movementsOfArticles: movements,
+        transaction: _transactionWithArticleTotals(
+          movements,
+          company: company,
+          discountPercent: percent,
+        ),
       );
     }
 
@@ -172,12 +253,17 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
       throw Exception('Transaction type cannot be null');
     }
 
+    final company = transactionType.company;
+    final discountPercent = _discountPercentFor(company, transactionType);
+
     state = state.copyWith(
         transaction: Transaction(
             type: transactionType,
             totalPrice: 0.00,
             state: transactionType.initialState,
-            company: transactionType.company),
+            company: company,
+            discountPercent: discountPercent,
+            discountAmount: 0),
         movementsOfArticles: [],
         movementsOfCashes: []);
   }
@@ -187,8 +273,20 @@ class GlobalTransactionNotifier extends StateNotifier<GlobalTransaction> {
       throw Exception('No active transaction');
     }
 
+    final type = state.transaction!.type;
+    final discountPercent = _discountPercentFor(company, type);
+    final movements = _withTransactionDiscount(
+      state.movementsOfArticles,
+      discountPercent,
+    );
+
     state = state.copyWith(
-      transaction: state.transaction!.copyWith(company: company),
+      movementsOfArticles: movements,
+      transaction: _transactionWithArticleTotals(
+        movements,
+        company: company,
+        discountPercent: discountPercent,
+      ),
     );
   }
 

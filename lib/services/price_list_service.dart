@@ -14,7 +14,6 @@ class PriceListService {
       '_id': 1,
       'name': 1,
       'percentage': 1,
-      'default': 1,
     });
     final sort = jsonEncode({"name": 1});
     const limit = 1000;

@@ -70,9 +70,9 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
   @override
   Widget build(BuildContext context) {
     final articles = ref.watch(articlesProvider);
-    final requestTaxes =
-        ref.watch(globalTransactionProvider).transaction?.type.requestTaxes ??
-            true;
+    final transaction = ref.watch(globalTransactionProvider).transaction;
+    final requestTaxes = transaction?.type.requestTaxes ?? true;
+    final discountPercent = transaction?.discountPercent ?? 0;
 
     return Container(
       padding: const EdgeInsets.all(10),
@@ -124,6 +124,10 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
                       final article = articles[index];
                       final displayPrice =
                           article.unitPriceFor(requestTaxes: requestTaxes);
+                      final hasDiscount = discountPercent > 0;
+                      final discountedPrice = hasDiscount
+                          ? displayPrice * (1 - discountPercent / 100)
+                          : displayPrice;
                       return Container(
                         margin: const EdgeInsets.only(
                             bottom: 4), // Márgenes más pequeños
@@ -174,11 +178,36 @@ class _SelectArticleWidgetState extends ConsumerState<SelectArticleWidget> {
                           ),
                           trailing: Padding(
                             padding: const EdgeInsets.only(right: 8.0),
-                            child: Text(
-                              displayPrice.asMoney,
-                              style: const TextStyle(
-                                  fontWeight: FontWeight.bold, fontSize: 16),
-                            ),
+                            child: hasDiscount
+                                ? Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    crossAxisAlignment: CrossAxisAlignment.end,
+                                    children: [
+                                      Text(
+                                        displayPrice.asMoney,
+                                        style: TextStyle(
+                                          fontSize: 11,
+                                          color: Colors.grey.shade600,
+                                          decoration:
+                                              TextDecoration.lineThrough,
+                                        ),
+                                      ),
+                                      Text(
+                                        discountedPrice.asMoney,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 16,
+                                          color: Colors.green.shade800,
+                                        ),
+                                      ),
+                                    ],
+                                  )
+                                : Text(
+                                    displayPrice.asMoney,
+                                    style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16),
+                                  ),
                           ),
                           onTap: () => _addArticleToTransaction(article),
                         ),

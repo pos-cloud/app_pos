@@ -29,6 +29,10 @@ class CompanyService {
       'allowCurrentAccount': 1,
       'creditLimit': 1,
       'employee': 1,
+      'discount': 1,
+      'group._id': 1,
+      'group.description': 1,
+      'group.discount': 1,
     });
     final sort = jsonEncode({"name": 1});
     const limit = 1000000;

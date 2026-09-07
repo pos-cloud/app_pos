@@ -1,5 +1,35 @@
 import 'package:app_pos/models/identification_type.dart';
 
+class CompanyGroup {
+  final String? id;
+  final String description;
+  final double discount;
+
+  CompanyGroup({
+    this.id,
+    this.description = '',
+    this.discount = 0,
+  });
+
+  factory CompanyGroup.fromJson(Map<String, dynamic> json) {
+    return CompanyGroup(
+      id: json['_id']?.toString(),
+      description: json['description']?.toString() ?? '',
+      discount: json['discount'] != null
+          ? (json['discount'] as num).toDouble()
+          : 0,
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      '_id': id,
+      'description': description,
+      'discount': discount,
+    };
+  }
+}
+
 class Company {
   static const String clientType = 'Cliente';
 
@@ -17,6 +47,8 @@ class Company {
   final String? city;
   final bool allowCurrentAccount;
   final double? creditLimit;
+  final double discount;
+  final CompanyGroup? group;
 
   Company({
     this.id,
@@ -33,7 +65,21 @@ class Company {
     this.city,
     this.allowCurrentAccount = false,
     this.creditLimit,
+    this.discount = 0,
+    this.group,
   });
+
+  /// Descuento propio del cliente (porcentaje).
+  double get companyDiscount => discount > 0 ? discount : 0;
+
+  /// Descuento del grupo al que pertenece el cliente.
+  double get groupDiscount =>
+      (group?.discount ?? 0) > 0 ? group!.discount : 0;
+
+  /// Suma de descuento cliente + grupo, igual que en app-web.
+  double get totalDiscount => companyDiscount + groupDiscount;
+
+  bool get hasDiscount => totalDiscount > 0;
 
   factory Company.fromJson(Map<String, dynamic> json) {
     return Company(
@@ -53,6 +99,10 @@ class Company {
       creditLimit: json['creditLimit'] != null
           ? (json['creditLimit'] as num).toDouble()
           : null,
+      discount: json['discount'] != null
+          ? (json['discount'] as num).toDouble()
+          : 0,
+      group: _parseGroup(json['group']),
     );
   }
 
@@ -60,6 +110,19 @@ class Company {
     if (value == null) return null;
     if (value is String) return value;
     if (value is Map) return value['_id']?.toString();
+    return null;
+  }
+
+  static CompanyGroup? _parseGroup(dynamic value) {
+    if (value == null) return null;
+    if (value is String) {
+      final id = value.trim();
+      if (id.isEmpty) return null;
+      return CompanyGroup(id: id);
+    }
+    if (value is Map) {
+      return CompanyGroup.fromJson(Map<String, dynamic>.from(value));
+    }
     return null;
   }
 
@@ -89,6 +152,8 @@ class Company {
     String? city,
     bool? allowCurrentAccount,
     double? creditLimit,
+    double? discount,
+    CompanyGroup? group,
   }) {
     return Company(
       id: id ?? this.id,
@@ -105,6 +170,8 @@ class Company {
       city: city ?? this.city,
       allowCurrentAccount: allowCurrentAccount ?? this.allowCurrentAccount,
       creditLimit: creditLimit ?? this.creditLimit,
+      discount: discount ?? this.discount,
+      group: group ?? this.group,
     );
   }
 
@@ -124,6 +191,8 @@ class Company {
       'city': city,
       'allowCurrentAccount': allowCurrentAccount,
       'creditLimit': creditLimit,
+      'discount': discount,
+      'group': group?.toJson(),
     };
   }
 

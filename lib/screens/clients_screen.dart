@@ -3,6 +3,7 @@ import 'package:app_pos/models/company.dart';
 import 'package:app_pos/providers/auth_provider.dart';
 import 'package:app_pos/providers/company_provider.dart';
 import 'package:app_pos/screens/edit_client_screen.dart';
+import 'package:app_pos/widgets/company_discount_chip.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -125,7 +126,11 @@ class _ClientsScreenState extends ConsumerState<ClientsScreen> {
                                   ),
                                 ),
                                 subtitle: _buildSubtitle(company),
-                                trailing: const Icon(Icons.chevron_right),
+                                trailing: company.hasDiscount
+                                    ? CompanyDiscountChip(
+                                        percent: company.totalDiscount,
+                                      )
+                                    : const Icon(Icons.chevron_right),
                                 onTap: () {
                                   Navigator.of(context).push(
                                     MaterialPageRoute(

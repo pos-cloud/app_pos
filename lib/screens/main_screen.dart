@@ -8,6 +8,7 @@ import 'package:app_pos/providers/payment_method_provider.dart';
 import 'package:app_pos/providers/price_list_provider.dart';
 import 'package:app_pos/screens/company_screen.dart';
 import 'package:app_pos/screens/movement_of_articles_screen.dart';
+import 'package:app_pos/utils/app_number_format.dart';
 import 'package:app_pos/widgets/animated_article_counter.dart';
 import 'package:app_pos/widgets/transaction_m3_badge.dart';
 import 'package:app_pos/widgets/delete_transaction_dialog.dart';
@@ -208,17 +209,27 @@ class _MainScreenState extends ConsumerState<MainScreen> {
           if (isTransactionActive &&
               currentTransaction.type.requestsCompany)
             IconButton(
-              icon: Icon(
-                _isCompanyMissing(currentTransaction)
-                    ? Icons.person_add
-                    : Icons.person,
-                color: _isCompanyMissing(currentTransaction)
-                    ? Colors.red
-                    : Colors.amber,
+              icon: Badge(
+                isLabelVisible: currentTransaction.hasCompanyDiscount,
+                label: Text(
+                  '-${currentTransaction.discountPercent.asPercent}',
+                  style: const TextStyle(fontSize: 10),
+                ),
+                backgroundColor: Colors.green.shade700,
+                child: Icon(
+                  _isCompanyMissing(currentTransaction)
+                      ? Icons.person_add
+                      : Icons.person,
+                  color: _isCompanyMissing(currentTransaction)
+                      ? Colors.red
+                      : Colors.amber,
+                ),
               ),
               tooltip: currentTransaction.hasAssignedCompany
                   ? (currentTransaction.company!.name.isNotEmpty
-                      ? 'Cliente: ${currentTransaction.company!.name}'
+                      ? (currentTransaction.hasCompanyDiscount
+                          ? 'Cliente: ${currentTransaction.company!.name} · Desc. ${currentTransaction.discountPercent.asPercent}'
+                          : 'Cliente: ${currentTransaction.company!.name}')
                       : 'Cliente asignado')
                   : (currentTransaction.type.requiresCompanySelection
                       ? 'Cliente obligatorio'
@@ -286,6 +297,7 @@ class _TransactionBody extends StatelessWidget {
 
     return Column(
       children: [
+        const _CompanyDiscountBanner(),
         if (showCobrar)
           const SelectPaymentMethodButton()
         else if (showArticles)
@@ -296,6 +308,61 @@ class _TransactionBody extends StatelessWidget {
               : const SizedBox.shrink(),
         ),
       ],
+    );
+  }
+}
+
+class _CompanyDiscountBanner extends ConsumerWidget {
+  const _CompanyDiscountBanner();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final transaction = ref.watch(globalTransactionProvider).transaction;
+    if (transaction == null || !transaction.hasCompanyDiscount) {
+      return const SizedBox.shrink();
+    }
+
+    final companyName = transaction.company?.name;
+    final label = (companyName != null && companyName.isNotEmpty)
+        ? 'Descuento ${transaction.discountPercent.asPercent} de $companyName'
+        : 'Descuento cliente ${transaction.discountPercent.asPercent}';
+
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final background =
+        isDark ? Colors.green.shade900.withValues(alpha: 0.45) : Colors.green.shade50;
+    final foreground =
+        isDark ? Colors.green.shade100 : Colors.green.shade900;
+
+    return Material(
+      color: background,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        child: Row(
+          children: [
+            Icon(Icons.local_offer, size: 18, color: foreground),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  color: foreground,
+                  fontWeight: FontWeight.w600,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            if (transaction.discountAmount > 0)
+              Text(
+                '-${transaction.discountAmount.asMoney}',
+                style: TextStyle(
+                  color: foreground,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+          ],
+        ),
+      ),
     );
   }
 }

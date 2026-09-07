@@ -70,6 +70,11 @@ class TransactionCreateMapper {
       map['priceList'] = t.priceList!.id;
     }
 
+    if (t.discountPercent > 0) {
+      map['discountPercent'] = t.discountPercent;
+      map['discountAmount'] = t.discountAmount;
+    }
+
     return map;
   }
 

@@ -134,6 +134,17 @@ class MovementOfArticle {
   /// Importe total de la línea: precio unitario × cantidad ([salePrice] debe reflejar eso).
   double get lineTotal => effectiveUnitPrice * effectiveAmount;
 
+  /// Descuento de transacción (cliente) por unidad.
+  double get effectiveTransactionDiscount => transactionDiscountAmount ?? 0;
+
+  /// Precio unitario ya descontado el % del cliente.
+  double get discountedUnitPrice =>
+      effectiveUnitPrice - effectiveTransactionDiscount;
+
+  /// Total de línea neto (después del descuento del cliente).
+  double get discountedLineTotal =>
+      discountedUnitPrice * effectiveAmount;
+
   MovementOfArticle copyWith({
     String? id,
     String? code,

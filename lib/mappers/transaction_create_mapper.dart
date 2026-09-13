@@ -119,7 +119,6 @@ class TransactionCreateMapper {
       'notes': m.notes ?? '',
       'printed': m.printed ?? 0,
       'read': m.read ?? 0,
-      'otherFields': [],
       'taxes': [],
       'isOptional': false,
       'printIn': 'ticket',
